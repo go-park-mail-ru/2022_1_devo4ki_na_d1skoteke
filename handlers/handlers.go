@@ -5,26 +5,29 @@ import (
 	"net/http"
 )
 
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
+type HandlerAPI struct {
+}
+
+func (h HandlerAPI) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Home")
 }
 
-func SignupAPI(w http.ResponseWriter, r *http.Request) {
+func (h HandlerAPI) Signup(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "signup")
 }
 
-func LoginAPI(w http.ResponseWriter, r *http.Request) {
+func (h HandlerAPI) Login(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "login")
 }
 
-func LogoutAPI(w http.ResponseWriter, r *http.Request) {
+func (h HandlerAPI) Logout(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "logout")
 }
 
-func NotesAPI(w http.ResponseWriter, r *http.Request) {
+func (h HandlerAPI) Notes(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "notes")
 }
 
-func SingleNoteAPI(w http.ResponseWriter, r *http.Request) {
+func (h HandlerAPI) SingleNote(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "note: "+r.RequestURI)
 }
