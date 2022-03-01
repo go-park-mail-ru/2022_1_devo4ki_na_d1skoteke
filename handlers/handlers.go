@@ -8,8 +8,8 @@ import (
 type HandlerAPI struct {
 }
 
-func CreateHandlerAPI() *HandlerAPI {
-	return new(HandlerAPI)
+func NewHandlerAPI() *HandlerAPI {
+	return &HandlerAPI{}
 }
 
 func (h *HandlerAPI) HomeHandler(w http.ResponseWriter, r *http.Request) {

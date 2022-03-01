@@ -11,7 +11,7 @@ import (
 func main() {
 	router := mux.NewRouter()
 
-	handler := handlers.CreateHandlerAPI()
+	handler := handlers.NewHandlerAPI()
 	router.HandleFunc("/", handler.HomeHandler)
 
 	routerAPI := router.PathPrefix("/api/v1").Subrouter()
