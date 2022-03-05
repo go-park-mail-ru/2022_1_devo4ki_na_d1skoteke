@@ -28,3 +28,8 @@ func (s SimpleSecurityManager) ComparePasswords(hashedPassword string, password 
 	}
 	return wrongPassword
 }
+
+func Hash(password string) []byte {
+	hash := sha256.Sum256([]byte(password))
+	return hash[:]
+}
