@@ -21,12 +21,12 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var newUser entity.RegisterUserRequest
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
 	_, err = h.userService.SaveUser(newUser)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
 	w.WriteHeader(http.StatusCreated)
