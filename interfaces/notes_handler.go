@@ -34,7 +34,7 @@ func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(note)
+  err = json.NewEncoder(w).Encode(note)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

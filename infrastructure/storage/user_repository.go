@@ -20,15 +20,15 @@ func NewUserCacheStorage(manager security.Manager) *UserCacheStorage {
 }
 
 func (r *UserCacheStorage) SaveUser(user entity.User) (entity.User, error) {
-	r.data.LoadOrStore(r.securityManager.Hash(user.Email), &user)
+	r.data.LoadOrStore(string(r.securityManager.Hash(user.Email)), &user)
 	return user, nil
 }
 
 func (r *UserCacheStorage) GetUser(email string) (entity.User, error) {
-	rawUser, ok := r.data.Load(r.securityManager.Hash(email))
+	rawUser, ok := r.data.Load(string(r.securityManager.Hash(email)))
 	if ok {
-		user := rawUser.(entity.User)
-		return user, nil
+		user := rawUser.(*entity.User)
+		return *user, nil
 	}
 	return entity.User{}, errors.New("no user")
 }

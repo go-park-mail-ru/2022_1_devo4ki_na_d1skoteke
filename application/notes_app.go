@@ -14,6 +14,12 @@ func NewNotesApp(notesRepo repository.NotesRepository, usersNotesRepository repo
 	return &NotesApp{
 		NotesRepository:      notesRepo,
 		UsersNotesRepository: usersNotesRepository,
+  }
+}
+
+func NewNotesApp(notesRepo repository.NotesRepository) *NotesApp {
+	return &NotesApp{
+		NotesRepository: notesRepo,
 	}
 }
 
