@@ -9,17 +9,21 @@ import (
 	"time"
 )
 
+const (
+	cookieSession = "session_id"
+)
+
 type AuthApp struct {
 	userService       UserAppManager
 	securityManager   security.Manager
 	sessionRepository repository.SessionRepository
 }
 
-func NewAuthApp(sr repository.SessionRepository, us UserAppManager, sm security.Manager) *AuthApp {
+func NewAuthApp(sessionRepo repository.SessionRepository, userServ UserAppManager, secureServ security.Manager) *AuthApp {
 	return &AuthApp{
-		userService:       us,
-		securityManager:   sm,
-		sessionRepository: sr,
+		userService:       userServ,
+		securityManager:   secureServ,
+		sessionRepository: sessionRepo,
 	}
 }
 
@@ -29,8 +33,7 @@ func (au *AuthApp) Login(email string, password string) (*http.Cookie, error) {
 		return &http.Cookie{}, err
 	}
 
-	err = au.securityManager.ComparePasswords(user.Password, password)
-	if err != nil {
+	if err = au.securityManager.ComparePasswords(user.Password, password); err != nil {
 		return &http.Cookie{}, err
 	}
 
@@ -41,7 +44,7 @@ func (au *AuthApp) Login(email string, password string) (*http.Cookie, error) {
 	}
 
 	cookie := http.Cookie{
-		Name:    "session_id",
+		Name:    cookieSession,
 		Value:   session.SID,
 		Expires: time.Now().Add(10 * time.Hour),
 	}
@@ -49,21 +52,16 @@ func (au *AuthApp) Login(email string, password string) (*http.Cookie, error) {
 }
 
 func (au *AuthApp) Logout(sessionCookie *http.Cookie) (*http.Cookie, error) {
-	_, ok := au.sessionRepository.HasSession(sessionCookie.Value)
-	if !ok {
+	if _, ok := au.sessionRepository.HasSession(sessionCookie.Value); !ok {
 		return &http.Cookie{}, errors.New("no session")
 	}
 
 	au.sessionRepository.DeleteSession(sessionCookie.Value)
-
 	sessionCookie.Expires = time.Now().AddDate(0, 0, -1)
 	return sessionCookie, nil
 }
 
 func (au *AuthApp) Auth(SID string) bool {
 	_, ok := au.sessionRepository.HasSession(SID)
-	if !ok {
-		return false
-	}
-	return true
+	return ok
 }

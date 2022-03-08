@@ -31,13 +31,12 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.Email == "" || user.Password == "" {
+	if !user.IsEmail() || !user.IsPassword() {
 		http.Error(w, "no email or password in request", http.StatusBadRequest)
 		return
 	}
 
 	cookie, err := h.authService.Login(user.Email, user.Password)
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -55,7 +54,6 @@ func (h *LoginHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newSessionCookie, err := h.authService.Logout(sessionCookie)
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
@@ -73,7 +71,6 @@ func (h *LoginHandler) Auth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	isAuth := h.authService.Auth(sessionCookie.Value)
-
 	if !isAuth {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
