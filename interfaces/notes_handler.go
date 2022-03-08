@@ -39,7 +39,7 @@ func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userTokens, err := h.notesService.GetTokensByUserID(string(h.secureService.Hash(user.Email)))
+	userTokens, err := h.notesService.TokensByUserID(string(h.secureService.Hash(user.Email)))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -50,7 +50,7 @@ func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	note, err := h.notesService.GetByToken(token)
+	note, err := h.notesService.FindByToken(token)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -69,7 +69,7 @@ func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notes, err := h.notesService.GetAllNotesByUserID(string(security.Hash(user.Email)))
+	notes, err := h.notesService.AllNotesByUserID(string(security.Hash(user.Email)))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

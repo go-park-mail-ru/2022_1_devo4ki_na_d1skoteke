@@ -6,9 +6,9 @@ import (
 )
 
 type NotesAppManager interface {
-	GetByToken(token string) (entity.Note, error)
-	GetAllNotesByUserID(hashedEmail string) ([]entity.Note, error)
-	GetTokensByUserID(hashedEmail string) ([]string, error)
+	FindByToken(token string) (entity.Note, error)
+	AllNotesByUserID(hashedEmail string) ([]entity.Note, error)
+	TokensByUserID(hashedEmail string) ([]string, error)
 }
 
 type UserAppManager interface {

@@ -17,18 +17,18 @@ func NewNotesApp(notesRepo repository.NotesRepository, usersNotesRepository repo
 	}
 }
 
-func (n *NotesApp) GetByToken(token string) (entity.Note, error) {
-	note, err := n.NotesRepository.GetByToken(token)
+func (n *NotesApp) FindByToken(token string) (entity.Note, error) {
+	note, err := n.NotesRepository.FindByToken(token)
 	if err != nil {
 		return entity.Note{}, err
 	}
 	return note, nil
 }
 
-func (n *NotesApp) GetAllNotesByUserID(hashedEmail string) ([]entity.Note, error) {
-	return n.UsersNotesRepository.GetAllNotesByUserID(hashedEmail)
+func (n *NotesApp) AllNotesByUserID(hashedEmail string) ([]entity.Note, error) {
+	return n.UsersNotesRepository.AllNotesByUserID(hashedEmail)
 }
 
-func (n *NotesApp) GetTokensByUserID(hashedEmail string) ([]string, error) {
-	return n.UsersNotesRepository.GetTokensByUserID(hashedEmail)
+func (n *NotesApp) TokensByUserID(hashedEmail string) ([]string, error) {
+	return n.UsersNotesRepository.TokensByUserID(hashedEmail)
 }
