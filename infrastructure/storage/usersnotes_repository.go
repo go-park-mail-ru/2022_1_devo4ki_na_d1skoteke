@@ -19,7 +19,7 @@ func NewUsersNotesStorage(notesStorage *NotesStorage) *UsersNotesStorage {
 		data:  sync.Map{},
 		notes: notesStorage,
 	}
-	storage.data.Store(security.Hash("email@vk.team"), []string{"1", "2", "3"})
+	storage.data.Store(string(security.Hash("email@vk.team")), []string{"1", "2", "3"})
 	return storage
 }
 
