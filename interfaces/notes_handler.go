@@ -2,6 +2,7 @@ package interfaces
 
 import (
 	"cotion/application"
+	"cotion/infrastructure/security"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -33,5 +34,20 @@ func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	json.NewEncoder(w).Encode(note)
+  err = json.NewEncoder(w).Encode(note)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
+	notes, err := h.notesService.GetAllNotesByUserID(string(security.Hash("email@vk.team")))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	err = json.NewEncoder(w).Encode(notes)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }

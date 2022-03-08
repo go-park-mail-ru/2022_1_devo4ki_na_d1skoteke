@@ -11,13 +11,14 @@ type NotesStorage struct {
 }
 
 func NewNotesStorage() *NotesStorage {
-	store := NotesStorage{
+	store := &NotesStorage{
 		data: sync.Map{},
 	}
 	store.data.Store("1", entity.Note{Name: "1st note", Body: "Hello everybody. This is Body of the 1st note)"})
 	store.data.Store("2", entity.Note{Name: "2st note", Body: "Hello everybody. This is Body of the 2st note)"})
 	store.data.Store("3", entity.Note{Name: "3st note", Body: "Hello everybody. This is Body of the 3st note)"})
-	return &store
+	
+  return store
 }
 
 func (store *NotesStorage) GetByToken(token string) (entity.Note, error) {

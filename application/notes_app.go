@@ -6,7 +6,15 @@ import (
 )
 
 type NotesApp struct {
-	NotesRepository repository.NotesRepository
+	NotesRepository      repository.NotesRepository
+	UsersNotesRepository repository.UsersNotesRepository
+}
+
+func NewNotesApp(notesRepo repository.NotesRepository, usersNotesRepository repository.UsersNotesRepository) *NotesApp {
+	return &NotesApp{
+		NotesRepository:      notesRepo,
+		UsersNotesRepository: usersNotesRepository,
+  }
 }
 
 func NewNotesApp(notesRepo repository.NotesRepository) *NotesApp {
@@ -21,4 +29,8 @@ func (n *NotesApp) GetByToken(token string) (entity.Note, error) {
 		return entity.Note{}, err
 	}
 	return note, nil
+}
+
+func (n *NotesApp) GetAllNotesByUserID(hashedEmail string) ([]entity.Note, error) {
+	return n.UsersNotesRepository.GetAllNotesByUserID(hashedEmail)
 }
