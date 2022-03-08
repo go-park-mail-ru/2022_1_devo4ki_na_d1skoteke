@@ -5,5 +5,5 @@ import (
 )
 
 type NotesRepository interface {
-	GetByToken(token string) (entity.Note, error)
+	FindByToken(token string) (entity.Note, error)
 }

@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	emailJson = "email"
-	passJson  = "password"
+	sessionCookie = "session_id"
 )
 
 type LoginHandler struct {
@@ -23,6 +22,11 @@ func NewLoginHandler(au application.AuthAppManager) *LoginHandler {
 }
 
 func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
+	if _, isAuth := h.authService.Auth(r); isAuth {
+		http.Error(w, "user already auth", http.StatusBadRequest)
+		return
+	}
+
 	user := entity.User{}
 	err := json.NewDecoder(r.Body).Decode(&user)
 
@@ -47,13 +51,13 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *LoginHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	sessionCookie, err := r.Cookie("session_id")
+	sessionCookie, err := r.Cookie(sessionCookie)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
-	newSessionCookie, err := h.authService.Logout(sessionCookie)
+	newSessionCookie, err := h.authService.Logout(*sessionCookie)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
@@ -64,14 +68,7 @@ func (h *LoginHandler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *LoginHandler) Auth(w http.ResponseWriter, r *http.Request) {
-	sessionCookie, err := r.Cookie("session_id")
-	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	isAuth := h.authService.Auth(sessionCookie.Value)
-	if !isAuth {
+	if _, isAuth := h.authService.Auth(r); !isAuth {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

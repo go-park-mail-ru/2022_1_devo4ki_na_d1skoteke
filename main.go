@@ -25,7 +25,7 @@ func main() {
 	userService := application.NewUserService(userStorage, securityManager)
 	authService := application.NewAuthApp(sessionStorage, userService, securityManager)
 
-	notesHandler := interfaces.NewNotesHandler(notesService)
+	notesHandler := interfaces.NewNotesHandler(notesService, authService, securityManager)
 	registerHandler := interfaces.NewAuthHandler(userService)
 	loginHandler := interfaces.NewLoginHandler(authService)
 

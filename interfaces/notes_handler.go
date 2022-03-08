@@ -3,6 +3,7 @@ package interfaces
 import (
 	"cotion/application"
 	"cotion/infrastructure/security"
+	"cotion/utils/contains"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -11,12 +12,16 @@ import (
 const noteToken = "note-token"
 
 type NotesHandler struct {
-	notesService application.NotesAppManager
+	notesService  application.NotesAppManager
+	authService   application.AuthAppManager
+	secureService security.Manager
 }
 
-func NewNotesHandler(service application.NotesAppManager) *NotesHandler {
+func NewNotesHandler(notesServ application.NotesAppManager, authServ application.AuthAppManager, secureServ security.Manager) *NotesHandler {
 	return &NotesHandler{
-		notesService: service,
+		notesService:  notesServ,
+		authService:   authServ,
+		secureService: secureServ,
 	}
 }
 
@@ -28,20 +33,43 @@ func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	note, err := h.notesService.GetByToken(token)
+	user, isAuth := h.authService.Auth(r)
+	if !isAuth {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	userTokens, err := h.notesService.TokensByUserID(string(h.secureService.Hash(user.Email)))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-  err = json.NewEncoder(w).Encode(note)
+	if !contains.Contains(userTokens, token) {
+		http.Error(w, "permission deny", http.StatusMethodNotAllowed)
+		return
+	}
+
+	note, err := h.notesService.FindByToken(token)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(note)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
-	notes, err := h.notesService.GetAllNotesByUserID(string(security.Hash("email@vk.team")))
+	user, isAuth := h.authService.Auth(r)
+	if !isAuth {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	notes, err := h.notesService.AllNotesByUserID(string(security.Hash(user.Email)))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
