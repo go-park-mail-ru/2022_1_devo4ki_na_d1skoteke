@@ -28,3 +28,7 @@ func (n *NotesApp) GetByToken(token string) (entity.Note, error) {
 func (n *NotesApp) GetAllNotesByUserID(hashedEmail string) ([]entity.Note, error) {
 	return n.UsersNotesRepository.GetAllNotesByUserID(hashedEmail)
 }
+
+func (n *NotesApp) GetTokensByUserID(hashedEmail string) ([]string, error) {
+	return n.UsersNotesRepository.GetTokensByUserID(hashedEmail)
+}

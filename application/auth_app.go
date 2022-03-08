@@ -1,6 +1,7 @@
 package application
 
 import (
+	"cotion/domain/entity"
 	"cotion/domain/repository"
 	"cotion/infrastructure/security"
 	"cotion/utils/generator"
@@ -10,7 +11,8 @@ import (
 )
 
 const (
-	cookieSession = "session_id"
+	sessionCookie     = "session_id"
+	pathSessionCookie = "/api/v1"
 )
 
 type AuthApp struct {
@@ -44,24 +46,39 @@ func (au *AuthApp) Login(email string, password string) (*http.Cookie, error) {
 	}
 
 	cookie := http.Cookie{
-		Name:    cookieSession,
+		Name:    sessionCookie,
 		Value:   session.SID,
-		Expires: time.Now().Add(10 * time.Hour),
+		Expires: time.Now().Add(5 * time.Hour),
+		Path:    pathSessionCookie,
 	}
 	return &cookie, nil
 }
 
-func (au *AuthApp) Logout(sessionCookie *http.Cookie) (*http.Cookie, error) {
+func (au *AuthApp) Logout(sessionCookie http.Cookie) (*http.Cookie, error) {
 	if _, ok := au.sessionRepository.HasSession(sessionCookie.Value); !ok {
 		return &http.Cookie{}, errors.New("no session")
 	}
 
 	au.sessionRepository.DeleteSession(sessionCookie.Value)
-	sessionCookie.Expires = time.Now().AddDate(0, 0, -1)
-	return sessionCookie, nil
+	sessionCookie.Expires = time.Now().Add(-5 * time.Hour)
+	return &sessionCookie, nil
 }
 
-func (au *AuthApp) Auth(SID string) bool {
-	_, ok := au.sessionRepository.HasSession(SID)
-	return ok
+func (au *AuthApp) Auth(r *http.Request) (entity.User, bool) {
+	sessionCookie, err := r.Cookie(sessionCookie)
+	if err != nil {
+		return entity.User{}, false
+	}
+
+	session, ok := au.sessionRepository.HasSession(sessionCookie.Value)
+	if !ok {
+		return entity.User{}, false
+	}
+
+	user, err := au.userService.GetUser(session.UserEmail)
+	if err != nil {
+		return entity.User{}, false
+	}
+
+	return user, true
 }

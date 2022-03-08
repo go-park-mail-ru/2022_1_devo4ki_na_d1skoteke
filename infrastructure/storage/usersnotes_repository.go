@@ -19,7 +19,8 @@ func NewUsersNotesStorage(notesStorage *NotesStorage) *UsersNotesStorage {
 		data:  sync.Map{},
 		notes: notesStorage,
 	}
-	storage.data.Store(string(security.Hash("email@vk.team")), []string{"1", "2", "3"})
+	storage.data.Store(string(security.Hash("test@mail.ru")), []string{"1", "3"})
+	storage.data.Store(string(security.Hash("nikita@mail.ru")), []string{"2"})
 	return storage
 }
 
@@ -30,7 +31,7 @@ func (storage *UsersNotesStorage) GetAllNotesByUserID(hashedEmail string) ([]ent
 	}
 
 	notesIDs := rawNotesIDs.([]string)
-	notes := make([]entity.Note, 1)
+	notes := make([]entity.Note, 0)
 
 	for _, id := range notesIDs {
 		note, err := storage.notes.GetByToken(id)
@@ -41,4 +42,12 @@ func (storage *UsersNotesStorage) GetAllNotesByUserID(hashedEmail string) ([]ent
 	}
 
 	return notes, nil
+}
+
+func (storage *UsersNotesStorage) GetTokensByUserID(hashedEmail string) ([]string, error) {
+	rawNotesIDs, ok := storage.data.Load(hashedEmail)
+	if ok != true {
+		return []string{}, cannotFindNotesForUser
+	}
+	return rawNotesIDs.([]string), nil
 }

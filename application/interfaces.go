@@ -8,6 +8,7 @@ import (
 type NotesAppManager interface {
 	GetByToken(token string) (entity.Note, error)
 	GetAllNotesByUserID(hashedEmail string) ([]entity.Note, error)
+	GetTokensByUserID(hashedEmail string) ([]string, error)
 }
 
 type UserAppManager interface {
@@ -17,6 +18,6 @@ type UserAppManager interface {
 
 type AuthAppManager interface {
 	Login(login string, password string) (*http.Cookie, error)
-	Logout(sessionCookie *http.Cookie) (*http.Cookie, error)
-	Auth(SID string) bool
+	Logout(sessionCookie http.Cookie) (*http.Cookie, error)
+	Auth(r *http.Request) (entity.User, bool)
 }
