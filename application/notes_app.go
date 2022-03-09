@@ -3,6 +3,8 @@ package application
 import (
 	"cotion/domain/entity"
 	"cotion/domain/repository"
+	"cotion/infrastructure/storage"
+	"errors"
 )
 
 type NotesApp struct {
@@ -26,9 +28,17 @@ func (n *NotesApp) FindByToken(token string) (entity.Note, error) {
 }
 
 func (n *NotesApp) AllNotesByUserID(hashedEmail string) ([]entity.Note, error) {
-	return n.UsersNotesRepository.AllNotesByUserID(hashedEmail)
+	notes, err := n.UsersNotesRepository.AllNotesByUserID(hashedEmail)
+	if errors.Is(err, storage.CannotFindNotesForUser) {
+		return []entity.Note{}, nil
+	}
+	return notes, err
 }
 
 func (n *NotesApp) TokensByUserID(hashedEmail string) ([]string, error) {
-	return n.UsersNotesRepository.TokensByUserID(hashedEmail)
+	tokens, err := n.UsersNotesRepository.TokensByUserID(hashedEmail)
+	if errors.Is(err, storage.CannotFindNotesForUser) {
+		return []string{}, nil
+	}
+	return tokens, err
 }
