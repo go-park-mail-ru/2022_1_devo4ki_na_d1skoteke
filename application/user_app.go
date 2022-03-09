@@ -12,6 +12,8 @@ type UserService struct {
 	securityManager security.Manager
 }
 
+var UserAlreadyRegistered = errors.New("user already registered")
+
 func NewUserService(userRepository repository.UserRepository, securityManager security.Manager) *UserService {
 	return &UserService{
 		userRepository:  userRepository,
@@ -34,7 +36,7 @@ func (u *UserService) SaveUser(registerUser entity.RegisterUserRequest) (entity.
 
 	_, err = u.userRepository.GetUser(user.Email)
 	if err == nil {
-		return user, errors.New("user already registered")
+		return user, UserAlreadyRegistered
 	}
 
 	savedUser, err := u.userRepository.SaveUser(user)

@@ -3,6 +3,7 @@ package entity
 import (
 	"cotion/utils/email"
 	"cotion/utils/password"
+	"errors"
 )
 
 type RegisterUserRequest struct {
@@ -12,6 +13,8 @@ type RegisterUserRequest struct {
 	ConfirmPassword string `json:"confirm_password"`
 }
 
+var DifferentPasswords = errors.New("different passwords")
+
 func (u *RegisterUserRequest) Validate() error {
 	err := email.ValidateEmail(u.Email)
 	if err != nil {
@@ -19,7 +22,7 @@ func (u *RegisterUserRequest) Validate() error {
 	}
 
 	if u.ConfirmPassword != u.Password {
-		return err
+		return DifferentPasswords
 	}
 
 	if err = password.ValidatePassword(u.Password); err != nil {
