@@ -2,6 +2,7 @@ package interfaces
 
 import (
 	"cotion/application"
+	"cotion/domain/entity"
 	"cotion/infrastructure/security"
 	"cotion/utils/contains"
 	"encoding/json"
@@ -39,6 +40,8 @@ func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	w.Header().Add("Content-Type", "application/json")
+
 	userTokens, err := h.notesService.TokensByUserID(string(h.secureService.Hash(user.Email)))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -69,12 +72,16 @@ func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Add("Content-Type", "application/json")
+
 	notes, err := h.notesService.AllNotesByUserID(string(security.Hash(user.Email)))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	err = json.NewEncoder(w).Encode(notes)
+	err = json.NewEncoder(w).Encode(entity.Notes{
+		Notes: notes,
+	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
