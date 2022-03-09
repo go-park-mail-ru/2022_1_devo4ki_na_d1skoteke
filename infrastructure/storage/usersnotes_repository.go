@@ -12,7 +12,8 @@ type UsersNotesStorage struct {
 	notes *NotesStorage
 }
 
-var cannotFindNotesForUser = errors.New("cannot find notes")
+var CannotFindNotesForUser = errors.New("cannot find notes")
+var CannotFindNoteByToken = errors.New("cannot find note by token")
 
 func NewUsersNotesStorage(notesStorage *NotesStorage) *UsersNotesStorage {
 	storage := &UsersNotesStorage{
@@ -26,8 +27,8 @@ func NewUsersNotesStorage(notesStorage *NotesStorage) *UsersNotesStorage {
 
 func (storage *UsersNotesStorage) AllNotesByUserID(hashedEmail string) ([]entity.Note, error) {
 	rawNotesIDs, ok := storage.data.Load(hashedEmail)
-	if ok != true {
-		return []entity.Note{}, cannotFindNotesForUser
+	if !ok {
+		return []entity.Note{}, CannotFindNotesForUser
 	}
 
 	notesIDs := rawNotesIDs.([]string)
@@ -36,7 +37,7 @@ func (storage *UsersNotesStorage) AllNotesByUserID(hashedEmail string) ([]entity
 	for _, id := range notesIDs {
 		note, err := storage.notes.FindByToken(id)
 		if err != nil {
-			return []entity.Note{}, cannotFindNotesForUser
+			return []entity.Note{}, CannotFindNoteByToken
 		}
 		notes = append(notes, note)
 	}
@@ -46,8 +47,8 @@ func (storage *UsersNotesStorage) AllNotesByUserID(hashedEmail string) ([]entity
 
 func (storage *UsersNotesStorage) TokensByUserID(hashedEmail string) ([]string, error) {
 	rawNotesIDs, ok := storage.data.Load(hashedEmail)
-	if ok != true {
-		return []string{}, cannotFindNotesForUser
+	if !ok {
+		return []string{}, CannotFindNotesForUser
 	}
 	return rawNotesIDs.([]string), nil
 }
