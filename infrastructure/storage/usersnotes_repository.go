@@ -21,6 +21,7 @@ func NewUsersNotesStorage(notesStorage *NotesStorage) *UsersNotesStorage {
 		notes: notesStorage,
 	}
 	storage.data.Store(string(security.Hash("test@mail.ru")), []string{"1", "3"})
+	storage.data.Store(string(security.Hash("test3@mail.ru")), []string{"0"})
 	storage.data.Store(string(security.Hash("nikita@mail.ru")), []string{"2"})
 	return storage
 }
