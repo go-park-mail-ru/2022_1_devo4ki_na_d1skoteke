@@ -22,6 +22,11 @@ func NewUserCacheStorage(manager security.Manager) *UserCacheStorage {
 		Email:    "test@mail.ru",
 		Password: string(manager.Hash("Test1234!@#")),
 	})
+	store.data.Store(string(manager.Hash("test2@mail.ru")), &entity.User{
+		Username: "test2",
+		Email:    "test2@mail.ru",
+		Password: string(manager.Hash("Test1234!@#")),
+	})
 	store.data.Store(string(manager.Hash("nikita@mail.ru")), &entity.User{
 		Username: "nikita",
 		Email:    "nikita@mail.ru",
