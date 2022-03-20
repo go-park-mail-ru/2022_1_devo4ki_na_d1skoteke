@@ -1,7 +1,7 @@
 package application
 
 import (
-	"cotion/domain/entity"
+	"cotion/internal/domain/entity"
 	"net/http"
 )
 
@@ -18,6 +18,6 @@ type UserAppManager interface {
 
 type AuthAppManager interface {
 	Login(login string, password string) (*http.Cookie, error)
-	Logout(sessionCookie http.Cookie) (*http.Cookie, error)
-	Auth(r *http.Request) (entity.User, bool)
+	Logout(sessionCookie *http.Cookie) (*http.Cookie, error)
+	Auth(sessionCookie *http.Cookie) (entity.User, bool)
 }

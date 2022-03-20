@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"cotion/domain/entity"
+	"cotion/internal/domain/entity"
 	"errors"
 	"sync"
 )

@@ -1,8 +1,8 @@
-package interfaces
+package handler
 
 import (
-	"cotion/application"
-	"cotion/domain/entity"
+	"cotion/internal/application"
+	"cotion/internal/domain/entity"
 	"encoding/json"
 	"net/http"
 )
@@ -22,7 +22,7 @@ func NewLoginHandler(au application.AuthAppManager) *LoginHandler {
 }
 
 func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
-	if _, isAuth := h.authService.Auth(r); isAuth {
+	if _, auth := isAuth(h.authService, r); auth {
 		http.Error(w, "user already auth", http.StatusBadRequest)
 		return
 	}
@@ -57,7 +57,7 @@ func (h *LoginHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newSessionCookie, err := h.authService.Logout(*sessionCookie)
+	newSessionCookie, err := h.authService.Logout(sessionCookie)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
@@ -68,9 +68,17 @@ func (h *LoginHandler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *LoginHandler) Auth(w http.ResponseWriter, r *http.Request) {
-	if _, isAuth := h.authService.Auth(r); !isAuth {
+	if _, auth := isAuth(h.authService, r); !auth {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+}
+
+func isAuth(authService application.AuthAppManager, r *http.Request) (entity.User, bool) {
+	sCookie, err := r.Cookie(sessionCookie)
+	if err != nil {
+		return entity.User{}, false
+	}
+	return authService.Auth(sCookie)
 }

@@ -1,9 +1,9 @@
-package application
+package notes
 
 import (
-	"cotion/domain/entity"
-	"cotion/infrastructure/security"
-	"cotion/infrastructure/storage"
+	"cotion/internal/domain/entity"
+	"cotion/internal/infrastructure/storage"
+	"cotion/internal/pkg/security"
 	"errors"
 	"github.com/stretchr/testify/require"
 	"log"

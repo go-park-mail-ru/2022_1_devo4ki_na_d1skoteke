@@ -1,9 +1,9 @@
-package application
+package user
 
 import (
-	"cotion/domain/entity"
-	"cotion/domain/repository"
-	"cotion/infrastructure/security"
+	"cotion/internal/domain/entity"
+	"cotion/internal/domain/repository"
+	"cotion/internal/pkg/security"
 	"errors"
 )
 

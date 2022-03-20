@@ -1,8 +1,8 @@
-package interfaces
+package handler
 
 import (
-	"cotion/application"
-	"cotion/domain/entity"
+	"cotion/internal/application"
+	"cotion/internal/domain/entity"
 	"encoding/json"
 	"net/http"
 )

@@ -1,10 +1,12 @@
 package main
 
 import (
-	"cotion/application"
-	"cotion/infrastructure/security"
-	storage "cotion/infrastructure/storage"
-	"cotion/interfaces"
+	"cotion/internal/application/auth"
+	"cotion/internal/application/notes"
+	"cotion/internal/application/user"
+	"cotion/internal/handler"
+	"cotion/internal/infrastructure/storage"
+	"cotion/internal/pkg/security"
 	"fmt"
 	"github.com/gorilla/mux"
 	"log"
@@ -21,13 +23,13 @@ func main() {
 	usersNotesStorage := storage.NewUsersNotesStorage(notesStorage)
 	sessionStorage := storage.NewSessionStorage()
 
-	notesService := application.NewNotesApp(notesStorage, usersNotesStorage)
-	userService := application.NewUserService(userStorage, securityManager)
-	authService := application.NewAuthApp(sessionStorage, userService, securityManager)
+	notesService := notes.NewNotesApp(notesStorage, usersNotesStorage)
+	userService := user.NewUserService(userStorage, securityManager)
+	authService := auth.NewAuthApp(sessionStorage, userService, securityManager)
 
-	notesHandler := interfaces.NewNotesHandler(notesService, authService, securityManager)
-	registerHandler := interfaces.NewAuthHandler(userService)
-	loginHandler := interfaces.NewLoginHandler(authService)
+	notesHandler := handler.NewNotesHandler(notesService, authService, securityManager)
+	registerHandler := handler.NewAuthHandler(userService)
+	loginHandler := handler.NewLoginHandler(authService)
 
 	routerAPI := router.PathPrefix("/api/v1").Subrouter()
 	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", notesHandler.ReceiveSingleNote).Methods("GET")

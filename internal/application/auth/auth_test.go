@@ -1,8 +1,10 @@
-package application
+package auth
 
 import (
-	"cotion/infrastructure/security"
-	"cotion/infrastructure/storage"
+	"cotion/internal/application/user"
+	"cotion/internal/domain/entity"
+	"cotion/internal/infrastructure/storage"
+	"cotion/internal/pkg/security"
 	"errors"
 	"github.com/stretchr/testify/require"
 	"log"
@@ -51,7 +53,7 @@ func TestLogin(t *testing.T) {
 	sessionStorage := storage.NewSessionStorage()
 	userStorage := storage.NewUserCacheStorage(securityManager)
 
-	userService := NewUserService(userStorage, securityManager)
+	userService := user.NewUserService(userStorage, securityManager)
 	authService := NewAuthApp(sessionStorage, userService, securityManager)
 
 	for name, tc := range cases {
@@ -97,15 +99,62 @@ func TestLoginLogout(t *testing.T) {
 	sessionStorage := storage.NewSessionStorage()
 	userStorage := storage.NewUserCacheStorage(securityManager)
 
-	userService := NewUserService(userStorage, securityManager)
+	userService := user.NewUserService(userStorage, securityManager)
 	authService := NewAuthApp(sessionStorage, userService, securityManager)
 
 	for name, tc := range cases {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			sessionCookie, _ := authService.Login(tc.inParam1, tc.inParam2)
-			result, err := authService.Logout(*sessionCookie)
+			result, err := authService.Logout(sessionCookie)
 			tc.expected(result, err)
+		})
+		log.Println("SUCCESS")
+	}
+}
+
+func TestAuth(t *testing.T) {
+	cases := map[string]struct {
+		inParam1 string
+		inParam2 string
+		expected func(entity.User, bool)
+	}{
+		"Successful": {
+			inParam1: "test@mail.ru",
+			inParam2: "Test1234!@#",
+			expected: func(user entity.User, ok bool) {
+				require.Equal(t, true, ok)
+
+				securityManager := security.NewSimpleSecurityManager()
+				require.Equal(t, user, entity.User{
+					Username: "test",
+					Email:    "test@mail.ru",
+					Password: string(securityManager.Hash("Test1234!@#")),
+				})
+			},
+		},
+		"No session": {
+			inParam1: "test0@mail.ru",
+			inParam2: "Test1234!@#",
+			expected: func(user entity.User, ok bool) {
+				require.Equal(t, false, ok)
+			},
+		},
+	}
+
+	securityManager := security.NewSimpleSecurityManager()
+	sessionStorage := storage.NewSessionStorage()
+	userStorage := storage.NewUserCacheStorage(securityManager)
+
+	userService := user.NewUserService(userStorage, securityManager)
+	authService := NewAuthApp(sessionStorage, userService, securityManager)
+
+	for name, tc := range cases {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			sessionCookie, _ := authService.Login(tc.inParam1, tc.inParam2)
+			result, ok := authService.Auth(sessionCookie)
+			tc.expected(result, ok)
 		})
 		log.Println("SUCCESS")
 	}

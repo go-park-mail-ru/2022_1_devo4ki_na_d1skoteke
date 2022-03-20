@@ -1,10 +1,11 @@
-package application
+package auth
 
 import (
-	"cotion/domain/entity"
-	"cotion/domain/repository"
-	"cotion/infrastructure/security"
-	"cotion/utils/generator"
+	"cotion/internal/application"
+	"cotion/internal/domain/entity"
+	"cotion/internal/domain/repository"
+	"cotion/internal/pkg/generator"
+	"cotion/internal/pkg/security"
 	"errors"
 	"net/http"
 	"time"
@@ -16,12 +17,12 @@ const (
 )
 
 type AuthApp struct {
-	userService       UserAppManager
+	userService       application.UserAppManager
 	securityManager   security.Manager
 	sessionRepository repository.SessionRepository
 }
 
-func NewAuthApp(sessionRepo repository.SessionRepository, userServ UserAppManager, secureServ security.Manager) *AuthApp {
+func NewAuthApp(sessionRepo repository.SessionRepository, userServ application.UserAppManager, secureServ security.Manager) *AuthApp {
 	return &AuthApp{
 		userService:       userServ,
 		securityManager:   secureServ,
@@ -54,22 +55,18 @@ func (au *AuthApp) Login(email string, password string) (*http.Cookie, error) {
 	return &cookie, nil
 }
 
-func (au *AuthApp) Logout(sessionCookie http.Cookie) (*http.Cookie, error) {
+func (au *AuthApp) Logout(sessionCookie *http.Cookie) (*http.Cookie, error) {
 	if _, ok := au.sessionRepository.HasSession(sessionCookie.Value); !ok {
 		return &http.Cookie{}, errors.New("no session")
 	}
 
 	au.sessionRepository.DeleteSession(sessionCookie.Value)
-	sessionCookie.Expires = time.Now().Add(-5 * time.Hour)
-	return &sessionCookie, nil
+	sessionCookie.Expires = time.Now().Add(-time.Hour * 5)
+	sessionCookie.Path = pathSessionCookie
+	return sessionCookie, nil
 }
 
-func (au *AuthApp) Auth(r *http.Request) (entity.User, bool) {
-	sessionCookie, err := r.Cookie(sessionCookie)
-	if err != nil {
-		return entity.User{}, false
-	}
-
+func (au *AuthApp) Auth(sessionCookie *http.Cookie) (entity.User, bool) {
 	session, ok := au.sessionRepository.HasSession(sessionCookie.Value)
 	if !ok {
 		return entity.User{}, false
