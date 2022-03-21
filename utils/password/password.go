@@ -1,11 +1,22 @@
 package password
 
 import (
-	passValidator "github.com/wagslane/go-password-validator"
+	"errors"
+	"github.com/dlclark/regexp2"
 )
 
-const minEntropyBits = 50.
+var badPassword = errors.New("bad password")
+
+const regex = `^(?=.*[0-9])[a-zA-Z0-9!@#$%^&*]{7,30}$`
 
 func ValidatePassword(password string) error {
-	return passValidator.Validate(password, minEntropyBits)
+	r, err := regexp2.Compile(regex, 0)
+	if err != nil {
+		return err
+	}
+
+	if isMatch, _ := r.MatchString(password); isMatch {
+		return nil
+	}
+	return badPassword
 }
