@@ -12,7 +12,7 @@ func TestPasswordValidator(t *testing.T) {
 	}{
 		"weak password": {
 			password: "a",
-			expected: badPassword,
+			expected: ErrBadPassword,
 		},
 		"strong password": {
 			password: "21ABYHBASD12311213123123asdasd",
@@ -28,7 +28,7 @@ func TestPasswordValidator(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			actual := ValidatePassword(tc.password)
-			assert.Equal(t, tc.expected, actual)
+			assert.ErrorIs(t, tc.expected, actual)
 		})
 	}
 }
