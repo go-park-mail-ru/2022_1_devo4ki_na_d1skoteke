@@ -1,10 +1,10 @@
-package interfaces
+package handler
 
 import (
-	"cotion/application"
-	"cotion/domain/entity"
-	"cotion/infrastructure/security"
-	"cotion/utils/contains"
+	"cotion/internal/application"
+	"cotion/internal/domain/entity"
+	"cotion/internal/pkg/contains"
+	"cotion/internal/pkg/security"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -34,8 +34,8 @@ func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	user, isAuth := h.authService.Auth(r)
-	if !isAuth {
+	user, auth := isAuth(h.authService, r)
+	if !auth {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -66,8 +66,8 @@ func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
-	user, isAuth := h.authService.Auth(r)
-	if !isAuth {
+	user, auth := isAuth(h.authService, r)
+	if !auth {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

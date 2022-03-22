@@ -1,8 +1,8 @@
 package entity
 
 import (
-	"cotion/utils/email"
-	"cotion/utils/password"
+	"cotion/internal/pkg/email"
+	"cotion/internal/pkg/password"
 	"errors"
 )
 

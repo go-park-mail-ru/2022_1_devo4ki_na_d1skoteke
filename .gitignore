@@ -15,3 +15,6 @@
 # vendor/
 
 .idea/
+profile.cov
+cover
+cover_wo_mock

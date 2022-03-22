@@ -1,8 +1,8 @@
 package storage
 
 import (
-	"cotion/domain/entity"
-	"cotion/infrastructure/security"
+	"cotion/internal/domain/entity"
+	"cotion/internal/pkg/security"
 	"errors"
 	"sync"
 )

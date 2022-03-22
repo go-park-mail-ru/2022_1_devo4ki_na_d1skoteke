@@ -1,9 +1,9 @@
-package application
+package notes
 
 import (
-	"cotion/domain/entity"
-	"cotion/domain/repository"
-	"cotion/infrastructure/storage"
+	"cotion/internal/domain/entity"
+	"cotion/internal/domain/repository"
+	"cotion/internal/infrastructure/storage"
 	"errors"
 )
 
