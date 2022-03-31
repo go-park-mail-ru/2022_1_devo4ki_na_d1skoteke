@@ -1,13 +1,13 @@
 package main
 
 import (
+	"cotion/interfaces/middleware"
 	"cotion/internal/application/auth"
 	"cotion/internal/application/notes"
 	"cotion/internal/application/user"
 	"cotion/internal/handler"
 	"cotion/internal/infrastructure/storage"
 	"cotion/internal/pkg/security"
-	"cotion/interfaces/middleware"
 	"fmt"
 	"github.com/gorilla/mux"
 	"log"
