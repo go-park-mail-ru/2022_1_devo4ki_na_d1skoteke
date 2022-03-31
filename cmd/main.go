@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cotion/interfaces/middleware"
 	"cotion/internal/application/auth"
 	"cotion/internal/application/notes"
 	"cotion/internal/application/user"
@@ -38,6 +39,8 @@ func main() {
 	routerAPI.HandleFunc("/users/logout", loginHandler.Logout).Methods("GET")
 	routerAPI.HandleFunc("/users/auth", loginHandler.Auth).Methods("GET")
 	routerAPI.HandleFunc("/users/signup", registerHandler.SignUp).Methods("POST")
+
+	router.Use(middleware.CorsMiddleware())
 
 	fmt.Println("Start server at port 3000...")
 	err := http.ListenAndServe(":3000", router)
