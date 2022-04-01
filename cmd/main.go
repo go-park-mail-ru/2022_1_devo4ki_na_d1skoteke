@@ -1,11 +1,11 @@
 package main
 
 import (
-	"cotion/interfaces/middleware"
 	"cotion/internal/application/auth"
 	"cotion/internal/application/notes"
 	"cotion/internal/application/user"
 	"cotion/internal/handler"
+	"cotion/internal/handler/middleware"
 	"cotion/internal/infrastructure/storage"
 	"cotion/internal/pkg/security"
 	"fmt"
@@ -34,7 +34,11 @@ func main() {
 
 	routerAPI := router.PathPrefix("/api/v1").Subrouter()
 	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", notesHandler.ReceiveSingleNote).Methods("GET")
+	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", notesHandler.UpdateNote).Methods("POST") //update note data
 	routerAPI.HandleFunc("/notes", notesHandler.MainPage).Methods("GET")
+	routerAPI.HandleFunc("/note/create", notesHandler.CreateNote).Methods("POST")
+	routerAPI.HandleFunc("/note/{note-token:[0-9]+}/delete", notesHandler.DeleteNote).Methods("POST")
+
 	routerAPI.HandleFunc("/users/login", loginHandler.Login).Methods("POST")
 	routerAPI.HandleFunc("/users/logout", loginHandler.Logout).Methods("GET")
 	routerAPI.HandleFunc("/users/auth", loginHandler.Auth).Methods("GET")

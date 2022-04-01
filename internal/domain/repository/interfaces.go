@@ -14,10 +14,15 @@ type UserRepository interface {
 }
 
 type UsersNotesRepository interface {
+	AddLink(userID string, noteToken string) error
+	DeleteLink(userID string, token string) error
 	AllNotesByUserID(hashedEmail string) ([]entity.Note, error)
 	TokensByUserID(hashedEmail string) ([]string, error)
 }
 
 type NotesRepository interface {
+	SaveNote(token string, note entity.Note) error
+	UpdateNote(token string, note entity.Note) error
+	DeleteNote(token string) error
 	FindByToken(token string) (entity.Note, error)
 }

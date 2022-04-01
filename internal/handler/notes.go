@@ -86,3 +86,98 @@ func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
+
+func (h *NotesHandler) CreateNote(w http.ResponseWriter, r *http.Request) {
+	user, auth := isAuth(h.authService, r)
+	if !auth {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var newNote entity.Note
+	err := json.NewDecoder(r.Body).Decode(&newNote)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	err = h.notesService.SaveNote(user, newNote)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *NotesHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	token, ok := vars[noteToken]
+	if !ok {
+		http.Error(w, "no token in request", http.StatusBadRequest)
+		return
+	}
+
+	user, auth := isAuth(h.authService, r)
+	if !auth {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	userTokens, err := h.notesService.TokensByUserID(string(h.secureService.Hash(user.Email)))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if !contains.Contains(userTokens, token) {
+		http.Error(w, "permission deny", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var newNote entity.Note
+	err = json.NewDecoder(r.Body).Decode(&newNote)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	err = h.notesService.UpdateNote(token, newNote)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *NotesHandler) DeleteNote(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	token, ok := vars[noteToken]
+	if !ok {
+		http.Error(w, "no token in request", http.StatusBadRequest)
+		return
+	}
+
+	user, auth := isAuth(h.authService, r)
+	if !auth {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	userTokens, err := h.notesService.TokensByUserID(string(h.secureService.Hash(user.Email)))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if !contains.Contains(userTokens, token) {
+		http.Error(w, "permission deny", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err = h.notesService.DeleteNote(string(security.Hash(user.Email)), token)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}

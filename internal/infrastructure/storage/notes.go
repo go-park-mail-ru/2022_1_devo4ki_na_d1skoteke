@@ -29,3 +29,21 @@ func (store *NotesStorage) FindByToken(token string) (entity.Note, error) {
 	note := rawNote.(entity.Note)
 	return note, nil
 }
+
+func (store *NotesStorage) SaveNote(token string, note entity.Note) error {
+	_, ok := store.data.LoadOrStore(token, note)
+	if !ok {
+		return errors.New("there is note in DB with this token")
+	}
+	return nil
+}
+
+func (store *NotesStorage) UpdateNote(token string, note entity.Note) error {
+	store.data.Store(token, note)
+	return nil
+}
+
+func (store *NotesStorage) DeleteNote(token string) error {
+	store.data.Delete(token)
+	return nil
+}

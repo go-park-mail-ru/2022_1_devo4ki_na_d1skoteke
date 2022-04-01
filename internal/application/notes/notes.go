@@ -4,6 +4,8 @@ import (
 	"cotion/internal/domain/entity"
 	"cotion/internal/domain/repository"
 	"cotion/internal/infrastructure/storage"
+	"cotion/internal/pkg/generator"
+	"cotion/internal/pkg/security"
 	"errors"
 )
 
@@ -41,4 +43,46 @@ func (n *NotesApp) TokensByUserID(hashedEmail string) ([]string, error) {
 		return []string{}, nil
 	}
 	return tokens, err
+}
+
+func (n *NotesApp) SaveNote(user entity.User, newNote entity.Note) error {
+	err := newNote.Validate()
+	if err != nil {
+		return err
+	}
+
+	newToken := generator.RandToken()
+
+	err = n.NotesRepository.SaveNote(newToken, newNote)
+	if err == nil {
+		return err
+	}
+
+	err = n.UsersNotesRepository.AddLink(string(security.Hash(user.Email)), newToken)
+	if err == nil {
+		return err
+	}
+	return nil
+}
+
+func (n *NotesApp) UpdateNote(token string, note entity.Note) error {
+	err := note.Validate()
+	if err != nil {
+		return err
+	}
+
+	n.NotesRepository.UpdateNote(token, note)
+	return nil
+}
+
+func (n *NotesApp) DeleteNote(userID string, token string) error {
+	err := n.NotesRepository.DeleteNote(token)
+	if err != nil {
+		return err
+	}
+	err = n.UsersNotesRepository.DeleteLink(userID, token)
+	if err != nil {
+		return err
+	}
+	return nil
 }

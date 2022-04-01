@@ -53,3 +53,41 @@ func (storage *UsersNotesStorage) TokensByUserID(hashedEmail string) ([]string, 
 	}
 	return rawNotesIDs.([]string), nil
 }
+
+func (storage *UsersNotesStorage) AddLink(userID string, noteToken string) error {
+	rawNotesIDs, ok := storage.data.Load(userID)
+	if !ok {
+		storage.data.Store(userID, []string{noteToken})
+	}
+	NotesIDs := rawNotesIDs.([]string)
+	NotesIDs = append(NotesIDs, noteToken)
+	storage.data.Store(userID, NotesIDs)
+	return nil
+}
+
+func findNote(NotesIDs []string, token string) (int, bool) {
+	for index, curToken := range NotesIDs {
+		if curToken == token {
+			return index, true
+		}
+	}
+	return -1, false
+}
+
+func (storage *UsersNotesStorage) DeleteLink(userID string, noteToken string) error {
+	rawNotesIDs, ok := storage.data.Load(userID)
+	if !ok {
+		return errors.New("can't find user")
+	}
+	NotesIDs := rawNotesIDs.([]string)
+
+	noteIndex, ok := findNote(NotesIDs, noteToken)
+	if !ok {
+		return errors.New("can't find token in user's notes")
+	}
+
+	NotesIDs[noteIndex] = NotesIDs[len(NotesIDs)-1]
+	NotesIDs = NotesIDs[:len(NotesIDs)-1]
+	storage.data.Store(userID, NotesIDs)
+	return nil
+}
