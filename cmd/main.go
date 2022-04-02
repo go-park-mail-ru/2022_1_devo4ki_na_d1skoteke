@@ -42,8 +42,8 @@ func main() {
 
 	router.Use(middleware.CorsMiddleware())
 
-	fmt.Println("Start server at port 3000...")
-	err := http.ListenAndServe(":3000", router)
+	fmt.Println("Start server at port 3001...")
+	err := http.ListenAndServe(":3001", router)
 	if err != nil {
 		log.Fatal(err)
 	}
