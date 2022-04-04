@@ -28,9 +28,7 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := entity.User{}
-	err := json.NewDecoder(r.Body).Decode(&user)
-
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, "problem with decode request", http.StatusBadRequest)
 		return
 	}

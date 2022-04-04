@@ -3,7 +3,7 @@ package generator
 import "math/rand"
 
 const (
-	DEFAULT_LENGTH = 10
+	defaultLength = 10
 )
 
 var (
@@ -19,7 +19,7 @@ func RandSID(n int) string {
 }
 
 func RandToken() string {
-	token := make([]rune, DEFAULT_LENGTH)
+	token := make([]rune, defaultLength)
 	for i := range token {
 		token[i] = rune(rand.Intn(9))
 	}

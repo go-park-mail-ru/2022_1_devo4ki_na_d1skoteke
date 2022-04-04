@@ -18,16 +18,19 @@ type Notes struct {
 }
 
 const (
-	MAX_NAME_LENGTH = 30
-	MAX_BODY_LENGTH = 500
+	MaxNameLength = 30
+	MaxBodyLength = 500
 )
 
+var ErrorNoteNameLengthExceedsLimit error = errors.New("note name length exceeds limit")
+var ErrorNoteBodyLengthExceedsLimit error = errors.New("note name length exceeds limit")
+
 func (n *Note) Validate() error {
-	if len(n.Name) > MAX_NAME_LENGTH {
-		return errors.New("note name length exceeds limit")
+	if len(n.Name) > MaxNameLength {
+		return ErrorNoteNameLengthExceedsLimit
 	}
-	if len(n.Name) > MAX_BODY_LENGTH {
-		return errors.New("note name length exceeds limit")
+	if len(n.Name) > MaxBodyLength {
+		return ErrorNoteBodyLengthExceedsLimit
 	}
 	return nil
 }

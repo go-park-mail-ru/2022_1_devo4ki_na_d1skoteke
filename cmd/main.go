@@ -34,9 +34,9 @@ func main() {
 
 	routerAPI := router.PathPrefix("/api/v1").Subrouter()
 	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", notesHandler.ReceiveSingleNote).Methods("GET")
-	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", notesHandler.UpdateNote).Methods("POST") //update note data
+	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", notesHandler.UpdateNote).Methods("PUT") //update note data
 	routerAPI.HandleFunc("/notes", notesHandler.MainPage).Methods("GET")
-	routerAPI.HandleFunc("/note/create", notesHandler.CreateNote).Methods("POST")
+	routerAPI.HandleFunc("/note", notesHandler.CreateNote).Methods("POST")
 	routerAPI.HandleFunc("/note/{note-token:[0-9]+}/delete", notesHandler.DeleteNote).Methods("POST")
 
 	routerAPI.HandleFunc("/users/login", loginHandler.Login).Methods("POST")

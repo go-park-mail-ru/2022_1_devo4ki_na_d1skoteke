@@ -19,13 +19,11 @@ func NewAuthHandler(userService application.UserAppManager) *AuthHandler {
 
 func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var newUser entity.RegisterUserRequest
-	err := json.NewDecoder(r.Body).Decode(&newUser)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&newUser); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
-	_, err = h.userService.SaveUser(newUser)
-	if err != nil {
+	if _, err := h.userService.SaveUser(newUser); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 

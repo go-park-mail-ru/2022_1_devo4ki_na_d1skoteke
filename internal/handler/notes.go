@@ -59,8 +59,7 @@ func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(note)
-	if err != nil {
+	if err := json.NewEncoder(w).Encode(note); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -79,10 +78,7 @@ func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	err = json.NewEncoder(w).Encode(entity.Notes{
-		Notes: notes,
-	})
-	if err != nil {
+	if err := json.NewEncoder(w).Encode(entity.Notes{Notes: notes}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -95,13 +91,11 @@ func (h *NotesHandler) CreateNote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var newNote entity.Note
-	err := json.NewDecoder(r.Body).Decode(&newNote)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&newNote); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
-	err = h.notesService.SaveNote(user, newNote)
-	if err != nil {
+	if err := h.notesService.SaveNote(user, newNote); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
@@ -134,13 +128,11 @@ func (h *NotesHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var newNote entity.Note
-	err = json.NewDecoder(r.Body).Decode(&newNote)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&newNote); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
-	err = h.notesService.UpdateNote(token, newNote)
-	if err != nil {
+	if err := h.notesService.UpdateNote(token, newNote); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -173,8 +165,7 @@ func (h *NotesHandler) DeleteNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.notesService.DeleteNote(string(security.Hash(user.Email)), token)
-	if err != nil {
+	if err := h.notesService.DeleteNote(string(security.Hash(user.Email)), token); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
