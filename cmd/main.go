@@ -32,22 +32,24 @@ func main() {
 	registerHandler := handler.NewAuthHandler(userService)
 	loginHandler := handler.NewLoginHandler(authService)
 
-	routerAPI := router.PathPrefix("/api/v1").Subrouter()
-	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", notesHandler.ReceiveSingleNote).Methods("GET")
-	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", notesHandler.UpdateNote).Methods("PUT") //update note data
-	routerAPI.HandleFunc("/notes", notesHandler.MainPage).Methods("GET")
-	routerAPI.HandleFunc("/note", notesHandler.CreateNote).Methods("POST")
-	routerAPI.HandleFunc("/note/{note-token:[0-9]+}/delete", notesHandler.DeleteNote).Methods("POST")
+	amw := middleware.NewAuthMiddleware(authService)
 
-	routerAPI.HandleFunc("/users/login", loginHandler.Login).Methods("POST")
-	routerAPI.HandleFunc("/users/logout", loginHandler.Logout).Methods("GET")
+	routerAPI := router.PathPrefix("/api/v1").Subrouter()
+	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", amw.AuthMiddleware(true, notesHandler.ReceiveSingleNote)).Methods("GET")
+	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", amw.AuthMiddleware(true, notesHandler.UpdateNote)).Methods("PUT") //update note data
+	routerAPI.HandleFunc("/notes", amw.AuthMiddleware(true, notesHandler.MainPage)).Methods("GET")
+	routerAPI.HandleFunc("/note", amw.AuthMiddleware(true, notesHandler.CreateNote)).Methods("POST")
+	routerAPI.HandleFunc("/note/{note-token:[0-9]+}/delete", amw.AuthMiddleware(true, notesHandler.DeleteNote)).Methods("POST")
+
+	routerAPI.HandleFunc("/users/login", amw.AuthMiddleware(false, loginHandler.Login)).Methods("POST")
+	routerAPI.HandleFunc("/users/logout", amw.AuthMiddleware(true, loginHandler.Logout)).Methods("GET")
 	routerAPI.HandleFunc("/users/auth", loginHandler.Auth).Methods("GET")
-	routerAPI.HandleFunc("/users/signup", registerHandler.SignUp).Methods("POST")
+	routerAPI.HandleFunc("/users/signup", amw.AuthMiddleware(false, registerHandler.SignUp)).Methods("POST")
 
 	router.Use(middleware.CorsMiddleware())
 
-	fmt.Println("Start server at port 3000...")
-	err := http.ListenAndServe(":3000", router)
+	fmt.Println("Start server at port 3001...")
+	err := http.ListenAndServe(":3001", router)
 	if err != nil {
 		log.Fatal(err)
 	}

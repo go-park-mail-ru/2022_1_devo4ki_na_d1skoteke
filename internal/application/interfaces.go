@@ -7,11 +7,12 @@ import (
 
 type NotesAppManager interface {
 	FindByToken(token string) (entity.Note, error)
-	AllNotesByUserID(hashedEmail string) ([]entity.Note, error)
+	AllNotesByUserID(user entity.User) ([]entity.Note, error)
 	TokensByUserID(hashedEmail string) ([]string, error)
-	SaveNote(user entity.User, note entity.Note) error
-	UpdateNote(token string, note entity.Note) error
-	DeleteNote(userID string, token string) error
+	SaveNote(user entity.User, noteRequest entity.NoteRequest) error
+	GetNote(user entity.User, token string) (entity.Note, error)
+	UpdateNote(user entity.User, token string, noteRequest entity.NoteRequest) error
+	DeleteNote(user entity.User, token string) error
 }
 
 type UserAppManager interface {

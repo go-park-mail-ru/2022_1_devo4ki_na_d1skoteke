@@ -22,11 +22,6 @@ func NewLoginHandler(au application.AuthAppManager) *LoginHandler {
 }
 
 func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
-	if _, auth := isAuth(h.authService, r); auth {
-		http.Error(w, "user already auth", http.StatusBadRequest)
-		return
-	}
-
 	user := entity.User{}
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, "problem with decode request", http.StatusBadRequest)
@@ -49,34 +44,24 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *LoginHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	sessionCookie, err := r.Cookie(sessionCookie)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
-
-	newSessionCookie, err := h.authService.Logout(sessionCookie)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
+	sessionCookie, _ := r.Cookie(sessionCookie)
+	newSessionCookie, _ := h.authService.Logout(sessionCookie)
 
 	http.SetCookie(w, newSessionCookie)
 	w.WriteHeader(http.StatusOK)
 }
 
 func (h *LoginHandler) Auth(w http.ResponseWriter, r *http.Request) {
-	if _, auth := isAuth(h.authService, r); !auth {
+	sCookie, err := r.Cookie(sessionCookie)
+	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-}
 
-func isAuth(authService application.AuthAppManager, r *http.Request) (entity.User, bool) {
-	sCookie, err := r.Cookie(sessionCookie)
-	if err != nil {
-		return entity.User{}, false
+	if _, auth := h.authService.Auth(sCookie); !auth {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
-	return authService.Auth(sCookie)
+
+	w.WriteHeader(http.StatusOK)
 }

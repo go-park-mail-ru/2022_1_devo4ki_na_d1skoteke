@@ -3,14 +3,16 @@ package handler
 import (
 	"cotion/internal/application"
 	"cotion/internal/domain/entity"
-	"cotion/internal/pkg/contains"
 	"cotion/internal/pkg/security"
 	"encoding/json"
+	"errors"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
 const noteToken = "note-token"
+
+var NoTokenError = errors.New("No token in request.")
 
 type NotesHandler struct {
 	notesService  application.NotesAppManager
@@ -27,6 +29,8 @@ func NewNotesHandler(notesServ application.NotesAppManager, authServ application
 }
 
 func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	user := r.Context().Value("user").(entity.User)
 	vars := mux.Vars(r)
 	token, ok := vars[noteToken]
 	if !ok {
@@ -34,26 +38,7 @@ func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	user, auth := isAuth(h.authService, r)
-	if !auth {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	w.Header().Add("Content-Type", "application/json")
-
-	userTokens, err := h.notesService.TokensByUserID(string(h.secureService.Hash(user.Email)))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if !contains.Contains(userTokens, token) {
-		http.Error(w, "permission deny", http.StatusMethodNotAllowed)
-		return
-	}
-
-	note, err := h.notesService.FindByToken(token)
+	note, err := h.notesService.GetNote(user, token)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -61,48 +46,46 @@ func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request)
 
 	if err := json.NewEncoder(w).Encode(note); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
 func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
-	user, auth := isAuth(h.authService, r)
-	if !auth {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
 	w.Header().Add("Content-Type", "application/json")
 
-	notes, err := h.notesService.AllNotesByUserID(string(security.Hash(user.Email)))
+	user := r.Context().Value("user").(entity.User)
+
+	notes, err := h.notesService.AllNotesByUserID(user)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	if err := json.NewEncoder(w).Encode(entity.Notes{Notes: notes}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
 func (h *NotesHandler) CreateNote(w http.ResponseWriter, r *http.Request) {
-	user, auth := isAuth(h.authService, r)
-	if !auth {
-		w.WriteHeader(http.StatusUnauthorized)
+	user := r.Context().Value("user").(entity.User)
+
+	var noteRequest entity.NoteRequest
+	if err := noteRequest.Bind(r); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	var newNote entity.Note
-	if err := json.NewDecoder(r.Body).Decode(&newNote); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	}
-
-	if err := h.notesService.SaveNote(user, newNote); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := h.notesService.SaveNote(user, noteRequest); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
 }
 
 func (h *NotesHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value("user").(entity.User)
 	vars := mux.Vars(r)
 	token, ok := vars[noteToken]
 	if !ok {
@@ -110,29 +93,13 @@ func (h *NotesHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, auth := isAuth(h.authService, r)
-	if !auth {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	userTokens, err := h.notesService.TokensByUserID(string(h.secureService.Hash(user.Email)))
-	if err != nil {
+	noteRequest := entity.NoteRequest{}
+	if err := noteRequest.Bind(r); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if !contains.Contains(userTokens, token) {
-		http.Error(w, "permission deny", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var newNote entity.Note
-	if err := json.NewDecoder(r.Body).Decode(&newNote); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	}
-
-	if err := h.notesService.UpdateNote(token, newNote); err != nil {
+	if err := h.notesService.UpdateNote(user, token, noteRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -141,31 +108,15 @@ func (h *NotesHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *NotesHandler) DeleteNote(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value("user").(entity.User)
 	vars := mux.Vars(r)
 	token, ok := vars[noteToken]
 	if !ok {
-		http.Error(w, "no token in request", http.StatusBadRequest)
+		http.Error(w, NoTokenError.Error(), http.StatusBadRequest)
 		return
 	}
 
-	user, auth := isAuth(h.authService, r)
-	if !auth {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	userTokens, err := h.notesService.TokensByUserID(string(h.secureService.Hash(user.Email)))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if !contains.Contains(userTokens, token) {
-		http.Error(w, "permission deny", http.StatusMethodNotAllowed)
-		return
-	}
-
-	if err := h.notesService.DeleteNote(string(security.Hash(user.Email)), token); err != nil {
+	if err := h.notesService.DeleteNote(user, token); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

@@ -91,3 +91,13 @@ func (storage *UsersNotesStorage) DeleteLink(userID string, noteToken string) er
 	storage.data.Store(userID, NotesIDs)
 	return nil
 }
+
+func (storage *UsersNotesStorage) CheckLink(userID string, noteToken string) bool {
+	rawNotesIDs, ok := storage.data.Load(userID)
+	if !ok {
+		return false
+	}
+	NotesIDs := rawNotesIDs.([]string)
+	_, ok = findNote(NotesIDs, noteToken)
+	return ok
+}
