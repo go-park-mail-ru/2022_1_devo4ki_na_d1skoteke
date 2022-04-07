@@ -11,8 +11,8 @@ const (
 	MaxBodyLength = 500
 )
 
-var ErrorNoteNameLengthExceedsLimit error = errors.New("note name length exceeds limit")
-var ErrorNoteBodyLengthExceedsLimit error = errors.New("note name length exceeds limit")
+var ErrNoteNameLengthExceedsLimit error = errors.New("note name length exceeds limit")
+var ErrNoteBodyLengthExceedsLimit error = errors.New("note name length exceeds limit")
 
 type Note struct {
 	Name string `json:"name"`
@@ -42,18 +42,16 @@ func (n *NoteRequest) Bind(r *http.Request) error {
 	if err := json.NewDecoder(r.Body).Decode(&n); err != nil {
 		return err
 	}
-	if err := n.Validate(); err != nil {
-		return err
-	}
-	return nil
+
+	return n.Validate()
 }
 
 func (n *NoteRequest) Validate() error {
 	if len(n.Name) > MaxNameLength {
-		return ErrorNoteNameLengthExceedsLimit
+		return ErrNoteNameLengthExceedsLimit
 	}
 	if len(n.Name) > MaxBodyLength {
-		return ErrorNoteBodyLengthExceedsLimit
+		return ErrNoteBodyLengthExceedsLimit
 	}
 	return nil
 }

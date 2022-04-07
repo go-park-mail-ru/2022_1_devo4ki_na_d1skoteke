@@ -5,11 +5,10 @@ import (
 	"cotion/internal/domain/repository"
 	"cotion/internal/infrastructure/storage"
 	"cotion/internal/pkg/generator"
-	"cotion/internal/pkg/security"
 	"errors"
 )
 
-var NoteAccessError = errors.New("The user does not have access to this note. Or the note does not exist.")
+var ErrNoteAccess = errors.New("The user does not have access to this note. Or the note does not exist.")
 
 type NotesApp struct {
 	notesRepository      repository.NotesRepository
@@ -24,15 +23,15 @@ func NewNotesApp(notesRepo repository.NotesRepository, usersNotesRepository repo
 }
 
 func (n *NotesApp) FindByToken(token string) (entity.Note, error) {
-	note, err := n.notesRepository.FindByToken(token)
+	note, err := n.notesRepository.Find(token)
 	if err != nil {
 		return entity.Note{}, err
 	}
 	return note, nil
 }
 
-func (n *NotesApp) AllNotesByUserID(user entity.User) ([]entity.Note, error) {
-	notes, err := n.usersNotesRepository.AllNotesByUserID(string(security.Hash(user.Email)))
+func (n *NotesApp) AllNotesByUserID(userID string) ([]entity.Note, error) {
+	notes, err := n.usersNotesRepository.AllNotesByUserID(userID)
 	if errors.Is(err, storage.CannotFindNotesForUser) {
 		return []entity.Note{}, nil
 	}
@@ -47,7 +46,7 @@ func (n *NotesApp) TokensByUserID(hashedEmail string) ([]string, error) {
 	return tokens, err
 }
 
-func (n *NotesApp) SaveNote(user entity.User, noteRequest entity.NoteRequest) error {
+func (n *NotesApp) SaveNote(userID string, noteRequest entity.NoteRequest) error {
 	newToken := generator.RandToken()
 
 	newNote := entity.Note{
@@ -55,22 +54,22 @@ func (n *NotesApp) SaveNote(user entity.User, noteRequest entity.NoteRequest) er
 		Body: noteRequest.Body,
 	}
 
-	if err := n.notesRepository.SaveNote(newToken, newNote); err == nil {
+	if err := n.notesRepository.Save(newToken, newNote); err == nil {
 		return err
 	}
 
-	if err := n.usersNotesRepository.AddLink(string(security.Hash(user.Email)), newToken); err == nil {
+	if err := n.usersNotesRepository.AddLink(userID, newToken); err == nil {
 		return err
 	}
 	return nil
 }
 
-func (n *NotesApp) GetNote(user entity.User, noteToken string) (entity.Note, error) {
-	if !n.usersNotesRepository.CheckLink(string(security.Hash(user.Email)), noteToken) {
-		return entity.Note{}, NoteAccessError
+func (n *NotesApp) GetNote(userID string, noteToken string) (entity.Note, error) {
+	if !n.usersNotesRepository.CheckLink(userID, noteToken) {
+		return entity.Note{}, ErrNoteAccess
 	}
 
-	note, err := n.notesRepository.FindByToken(noteToken)
+	note, err := n.notesRepository.Find(noteToken)
 	if err != nil {
 		return entity.Note{}, err
 	}
@@ -78,9 +77,9 @@ func (n *NotesApp) GetNote(user entity.User, noteToken string) (entity.Note, err
 	return note, nil
 }
 
-func (n *NotesApp) UpdateNote(user entity.User, noteToken string, noteRequest entity.NoteRequest) error {
-	if !n.usersNotesRepository.CheckLink(string(security.Hash(user.Email)), noteToken) {
-		return NoteAccessError
+func (n *NotesApp) UpdateNote(userID string, noteToken string, noteRequest entity.NoteRequest) error {
+	if !n.usersNotesRepository.CheckLink(userID, noteToken) {
+		return ErrNoteAccess
 	}
 
 	updateNote := entity.Note{
@@ -88,17 +87,16 @@ func (n *NotesApp) UpdateNote(user entity.User, noteToken string, noteRequest en
 		Body: noteRequest.Body,
 	}
 
-	n.notesRepository.UpdateNote(noteToken, updateNote)
+	n.notesRepository.Update(noteToken, updateNote)
 	return nil
 }
 
-func (n *NotesApp) DeleteNote(user entity.User, noteToken string) error {
-	userID := string(security.Hash(user.Email))
+func (n *NotesApp) DeleteNote(userID string, noteToken string) error {
 	if !n.usersNotesRepository.CheckLink(userID, noteToken) {
-		return NoteAccessError
+		return ErrNoteAccess
 	}
 
-	if err := n.notesRepository.DeleteNote(noteToken); err != nil {
+	if err := n.notesRepository.Delete(noteToken); err != nil {
 		return err
 	}
 

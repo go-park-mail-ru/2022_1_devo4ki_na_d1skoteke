@@ -21,7 +21,7 @@ func NewNotesStorage() *NotesStorage {
 	return store
 }
 
-func (store *NotesStorage) FindByToken(token string) (entity.Note, error) {
+func (store *NotesStorage) Find(token string) (entity.Note, error) {
 	rawNote, ok := store.data.Load(token)
 	if !ok {
 		return entity.Note{}, errors.New("no note in DB with this token")
@@ -30,7 +30,7 @@ func (store *NotesStorage) FindByToken(token string) (entity.Note, error) {
 	return note, nil
 }
 
-func (store *NotesStorage) SaveNote(token string, note entity.Note) error {
+func (store *NotesStorage) Save(token string, note entity.Note) error {
 	_, ok := store.data.LoadOrStore(token, note)
 	if !ok {
 		return errors.New("there is note in DB with this token")
@@ -38,12 +38,12 @@ func (store *NotesStorage) SaveNote(token string, note entity.Note) error {
 	return nil
 }
 
-func (store *NotesStorage) UpdateNote(token string, note entity.Note) error {
+func (store *NotesStorage) Update(token string, note entity.Note) error {
 	store.data.Store(token, note)
 	return nil
 }
 
-func (store *NotesStorage) DeleteNote(token string) error {
+func (store *NotesStorage) Delete(token string) error {
 	store.data.Delete(token)
 	return nil
 }

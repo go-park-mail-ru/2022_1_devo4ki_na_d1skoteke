@@ -44,8 +44,16 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *LoginHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	sessionCookie, _ := r.Cookie(sessionCookie)
-	newSessionCookie, _ := h.authService.Logout(sessionCookie)
+	sessionCookie, err := r.Cookie(sessionCookie)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	newSessionCookie, err := h.authService.Logout(sessionCookie)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	http.SetCookie(w, newSessionCookie)
 	w.WriteHeader(http.StatusOK)

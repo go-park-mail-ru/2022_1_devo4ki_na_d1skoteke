@@ -35,16 +35,16 @@ func main() {
 	amw := middleware.NewAuthMiddleware(authService)
 
 	routerAPI := router.PathPrefix("/api/v1").Subrouter()
-	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", amw.AuthMiddleware(true, notesHandler.ReceiveSingleNote)).Methods("GET")
-	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", amw.AuthMiddleware(true, notesHandler.UpdateNote)).Methods("PUT") //update note data
-	routerAPI.HandleFunc("/notes", amw.AuthMiddleware(true, notesHandler.MainPage)).Methods("GET")
-	routerAPI.HandleFunc("/note", amw.AuthMiddleware(true, notesHandler.CreateNote)).Methods("POST")
-	routerAPI.HandleFunc("/note/{note-token:[0-9]+}/delete", amw.AuthMiddleware(true, notesHandler.DeleteNote)).Methods("POST")
+	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", amw.Auth(notesHandler.ReceiveSingleNote)).Methods("GET")
+	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", amw.Auth(notesHandler.UpdateNote)).Methods("PUT") //update note data
+	routerAPI.HandleFunc("/notes", amw.Auth(notesHandler.MainPage)).Methods("GET")
+	routerAPI.HandleFunc("/note", amw.Auth(notesHandler.CreateNote)).Methods("POST")
+	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", amw.Auth(notesHandler.DeleteNote)).Methods("DELETE")
 
-	routerAPI.HandleFunc("/users/login", amw.AuthMiddleware(false, loginHandler.Login)).Methods("POST")
-	routerAPI.HandleFunc("/users/logout", amw.AuthMiddleware(true, loginHandler.Logout)).Methods("GET")
+	routerAPI.HandleFunc("/users/login", amw.NotAuth(loginHandler.Login)).Methods("POST")
+	routerAPI.HandleFunc("/users/logout", amw.Auth(loginHandler.Logout)).Methods("GET")
 	routerAPI.HandleFunc("/users/auth", loginHandler.Auth).Methods("GET")
-	routerAPI.HandleFunc("/users/signup", amw.AuthMiddleware(false, registerHandler.SignUp)).Methods("POST")
+	routerAPI.HandleFunc("/users/signup", amw.NotAuth(registerHandler.SignUp)).Methods("POST")
 
 	router.Use(middleware.CorsMiddleware())
 

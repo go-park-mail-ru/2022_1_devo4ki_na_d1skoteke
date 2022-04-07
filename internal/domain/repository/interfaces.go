@@ -22,8 +22,8 @@ type UsersNotesRepository interface {
 }
 
 type NotesRepository interface {
-	SaveNote(token string, note entity.Note) error
-	UpdateNote(token string, note entity.Note) error
-	DeleteNote(token string) error
-	FindByToken(token string) (entity.Note, error)
+	Save(token string, note entity.Note) error
+	Update(token string, note entity.Note) error
+	Delete(token string) error
+	Find(token string) (entity.Note, error)
 }

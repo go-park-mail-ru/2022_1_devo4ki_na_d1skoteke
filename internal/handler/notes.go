@@ -38,7 +38,8 @@ func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	note, err := h.notesService.GetNote(user, token)
+	userID := string(h.secureService.Hash(user.Email))
+	note, err := h.notesService.GetNote(userID, token)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -55,7 +56,7 @@ func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
 
 	user := r.Context().Value("user").(entity.User)
 
-	notes, err := h.notesService.AllNotesByUserID(user)
+	notes, err := h.notesService.AllNotesByUserID(string(security.Hash(user.Email)))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -76,7 +77,8 @@ func (h *NotesHandler) CreateNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.notesService.SaveNote(user, noteRequest); err != nil {
+	userID := string(h.secureService.Hash(user.Email))
+	if err := h.notesService.SaveNote(userID, noteRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -99,7 +101,8 @@ func (h *NotesHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.notesService.UpdateNote(user, token, noteRequest); err != nil {
+	userID := string(h.secureService.Hash(user.Email))
+	if err := h.notesService.UpdateNote(userID, token, noteRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -116,7 +119,8 @@ func (h *NotesHandler) DeleteNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.notesService.DeleteNote(user, token); err != nil {
+	userID := string(h.secureService.Hash(user.Email))
+	if err := h.notesService.DeleteNote(userID, token); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

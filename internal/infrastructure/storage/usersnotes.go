@@ -36,7 +36,7 @@ func (storage *UsersNotesStorage) AllNotesByUserID(hashedEmail string) ([]entity
 	notes := make([]entity.Note, 0)
 
 	for _, id := range notesIDs {
-		note, err := storage.notes.FindByToken(id)
+		note, err := storage.notes.Find(id)
 		if err != nil {
 			return []entity.Note{}, CannotFindNoteByToken
 		}
