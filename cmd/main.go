@@ -1,11 +1,11 @@
 package main
 
 import (
-	"cotion/interfaces/middleware"
 	"cotion/internal/application/auth"
 	"cotion/internal/application/notes"
 	"cotion/internal/application/user"
 	"cotion/internal/handler"
+	"cotion/internal/handler/middleware"
 	"cotion/internal/infrastructure/storage"
 	"cotion/internal/pkg/security"
 	"fmt"
@@ -32,18 +32,24 @@ func main() {
 	registerHandler := handler.NewAuthHandler(userService)
 	loginHandler := handler.NewLoginHandler(authService)
 
+	amw := middleware.NewAuthMiddleware(authService)
+
 	routerAPI := router.PathPrefix("/api/v1").Subrouter()
-	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", notesHandler.ReceiveSingleNote).Methods("GET")
-	routerAPI.HandleFunc("/notes", notesHandler.MainPage).Methods("GET")
-	routerAPI.HandleFunc("/users/login", loginHandler.Login).Methods("POST")
-	routerAPI.HandleFunc("/users/logout", loginHandler.Logout).Methods("GET")
+	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", amw.Auth(notesHandler.ReceiveSingleNote)).Methods("GET")
+	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", amw.Auth(notesHandler.UpdateNote)).Methods("PUT") //update note data
+	routerAPI.HandleFunc("/notes", amw.Auth(notesHandler.MainPage)).Methods("GET")
+	routerAPI.HandleFunc("/note", amw.Auth(notesHandler.CreateNote)).Methods("POST")
+	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", amw.Auth(notesHandler.DeleteNote)).Methods("DELETE")
+
+	routerAPI.HandleFunc("/users/login", amw.NotAuth(loginHandler.Login)).Methods("POST")
+	routerAPI.HandleFunc("/users/logout", amw.Auth(loginHandler.Logout)).Methods("GET")
 	routerAPI.HandleFunc("/users/auth", loginHandler.Auth).Methods("GET")
-	routerAPI.HandleFunc("/users/signup", registerHandler.SignUp).Methods("POST")
+	routerAPI.HandleFunc("/users/signup", amw.NotAuth(registerHandler.SignUp)).Methods("POST")
 
 	router.Use(middleware.CorsMiddleware())
 
-	fmt.Println("Start server at port 3000...")
-	err := http.ListenAndServe(":3000", router)
+	fmt.Println("Start server at port 3001...")
+	err := http.ListenAndServe(":3001", router)
 	if err != nil {
 		log.Fatal(err)
 	}

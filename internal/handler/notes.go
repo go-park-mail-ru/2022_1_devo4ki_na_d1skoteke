@@ -3,14 +3,16 @@ package handler
 import (
 	"cotion/internal/application"
 	"cotion/internal/domain/entity"
-	"cotion/internal/pkg/contains"
 	"cotion/internal/pkg/security"
 	"encoding/json"
+	"errors"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
 const noteToken = "note-token"
+
+var NoTokenError = errors.New("No token in request.")
 
 type NotesHandler struct {
 	notesService  application.NotesAppManager
@@ -27,6 +29,8 @@ func NewNotesHandler(notesServ application.NotesAppManager, authServ application
 }
 
 func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	user := r.Context().Value("user").(entity.User)
 	vars := mux.Vars(r)
 	token, ok := vars[noteToken]
 	if !ok {
@@ -34,55 +38,92 @@ func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	user, auth := isAuth(h.authService, r)
-	if !auth {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	w.Header().Add("Content-Type", "application/json")
-
-	userTokens, err := h.notesService.TokensByUserID(string(h.secureService.Hash(user.Email)))
+	userID := string(h.secureService.Hash(user.Email))
+	note, err := h.notesService.GetNote(userID, token)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if !contains.Contains(userTokens, token) {
-		http.Error(w, "permission deny", http.StatusMethodNotAllowed)
-		return
-	}
-
-	note, err := h.notesService.FindByToken(token)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = json.NewEncoder(w).Encode(note)
-	if err != nil {
+	if err := json.NewEncoder(w).Encode(note); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
 func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
-	user, auth := isAuth(h.authService, r)
-	if !auth {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
 	w.Header().Add("Content-Type", "application/json")
+
+	user := r.Context().Value("user").(entity.User)
 
 	notes, err := h.notesService.AllNotesByUserID(string(security.Hash(user.Email)))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	err = json.NewEncoder(w).Encode(entity.Notes{
-		Notes: notes,
-	})
-	if err != nil {
+	if err := json.NewEncoder(w).Encode(entity.Notes{Notes: notes}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+}
+
+func (h *NotesHandler) CreateNote(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value("user").(entity.User)
+
+	var noteRequest entity.NoteRequest
+	if err := noteRequest.Bind(r); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	userID := string(h.secureService.Hash(user.Email))
+	if err := h.notesService.SaveNote(userID, noteRequest); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *NotesHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value("user").(entity.User)
+	vars := mux.Vars(r)
+	token, ok := vars[noteToken]
+	if !ok {
+		http.Error(w, "no token in request", http.StatusBadRequest)
+		return
+	}
+
+	noteRequest := entity.NoteRequest{}
+	if err := noteRequest.Bind(r); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	userID := string(h.secureService.Hash(user.Email))
+	if err := h.notesService.UpdateNote(userID, token, noteRequest); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *NotesHandler) DeleteNote(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value("user").(entity.User)
+	vars := mux.Vars(r)
+	token, ok := vars[noteToken]
+	if !ok {
+		http.Error(w, NoTokenError.Error(), http.StatusBadRequest)
+		return
+	}
+
+	userID := string(h.secureService.Hash(user.Email))
+	if err := h.notesService.DeleteNote(userID, token); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

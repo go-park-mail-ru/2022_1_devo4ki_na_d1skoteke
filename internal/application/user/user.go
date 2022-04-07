@@ -22,8 +22,7 @@ func NewUserService(userRepository repository.UserRepository, securityManager se
 }
 
 func (u *UserService) SaveUser(registerUser entity.RegisterUserRequest) (entity.User, error) {
-	err := registerUser.Validate()
-	if err != nil {
+	if err := registerUser.Validate(); err != nil {
 		return entity.User{}, err
 	}
 
@@ -34,8 +33,7 @@ func (u *UserService) SaveUser(registerUser entity.RegisterUserRequest) (entity.
 	}
 	user.Password = string(u.securityManager.Hash(user.Password))
 
-	_, err = u.userRepository.GetUser(user.Email)
-	if err == nil {
+	if _, err := u.userRepository.GetUser(user.Email); err == nil {
 		return user, UserAlreadyRegistered
 	}
 
