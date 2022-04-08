@@ -134,3 +134,162 @@ func TestTokensByUserID(t *testing.T) {
 		log.Println("SUCCESS")
 	}
 }
+
+func TestSaveNote(t *testing.T) {
+	cases := map[string]struct {
+		inUserID      string
+		inNoteRequest entity.NoteRequest
+		expected      func(error)
+	}{
+		"Success": {
+			inUserID: string(security.Hash("test@mail.ru")),
+			inNoteRequest: entity.NoteRequest{
+				Name: "Test Save",
+				Body: "This is body for test save note",
+			},
+			expected: func(actualErr error) {
+				require.Equal(t, nil, actualErr)
+			},
+		},
+	}
+
+	notesStorage := storage.NewNotesStorage()
+	usersNotesStorage := storage.NewUsersNotesStorage(notesStorage)
+	notesService := NewNotesApp(notesStorage, usersNotesStorage)
+
+	for name, tc := range cases {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			err := notesService.SaveNote(tc.inUserID, tc.inNoteRequest)
+			tc.expected(err)
+
+		})
+		log.Println("SUCCESS")
+	}
+}
+
+func TestGetNote(t *testing.T) {
+	cases := map[string]struct {
+		inUserID    string
+		inNoteToken string
+		expected    func(entity.Note, error)
+	}{
+		"Success": {
+			inUserID:    string(security.Hash("test@mail.ru")),
+			inNoteToken: "1",
+			expected: func(actualNote entity.Note, actualErr error) {
+				require.Equal(t, nil, actualErr)
+				require.Equal(t, entity.Note{
+					Name: "1st note",
+					Body: "Hello everybody. This is Body of the 1st note)",
+				}, actualNote)
+			},
+		},
+		"ErrNoteAccess": {
+			inUserID:    string(security.Hash("test@mail.ru")),
+			inNoteToken: "2",
+			expected: func(actualNote entity.Note, actualErr error) {
+				require.Equal(t, ErrNoteAccess, actualErr)
+			},
+		},
+		"ErrNoNoteInDB": {
+			inUserID:    string(security.Hash("test@mail.ru")),
+			inNoteToken: "0",
+			expected: func(actualNote entity.Note, actualErr error) {
+				require.Equal(t, storage.ErrNoNoteInDB, actualErr)
+			},
+		},
+	}
+
+	notesStorage := storage.NewNotesStorage()
+	usersNotesStorage := storage.NewUsersNotesStorage(notesStorage)
+	notesService := NewNotesApp(notesStorage, usersNotesStorage)
+
+	usersNotesStorage.AddLink(string(security.Hash("test@mail.ru")), "0")
+
+	for name, tc := range cases {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			note, err := notesService.GetNote(tc.inUserID, tc.inNoteToken)
+			tc.expected(note, err)
+
+		})
+		log.Println("SUCCESS")
+	}
+}
+
+func TestUpdateNote(t *testing.T) {
+	cases := map[string]struct {
+		inUserID      string
+		inNoteToken   string
+		inNoteRequest entity.NoteRequest
+		expected      func(error)
+	}{
+		"Success": {
+			inUserID:    string(security.Hash("test@mail.ru")),
+			inNoteToken: "1",
+			inNoteRequest: entity.NoteRequest{
+				Name: "Updated 1st note",
+				Body: "Hello everybody. This is Body of the updated 1st note)",
+			},
+			expected: func(actualErr error) {
+				require.Equal(t, nil, actualErr)
+			},
+		},
+		"ErrNoteAccess": {
+			inUserID:    string(security.Hash("test@mail.ru")),
+			inNoteToken: "2",
+			inNoteRequest: entity.NoteRequest{
+				Name: "Updated 1st note",
+				Body: "Hello everybody. This is Body of the updated 1st note)",
+			},
+			expected: func(actualErr error) {
+				require.Equal(t, ErrNoteAccess, actualErr)
+			},
+		},
+	}
+
+	notesStorage := storage.NewNotesStorage()
+	usersNotesStorage := storage.NewUsersNotesStorage(notesStorage)
+	notesService := NewNotesApp(notesStorage, usersNotesStorage)
+
+	for name, tc := range cases {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			err := notesService.UpdateNote(tc.inUserID, tc.inNoteToken, tc.inNoteRequest)
+			tc.expected(err)
+
+		})
+		log.Println("SUCCESS")
+	}
+}
+
+func TestDeleteNote(t *testing.T) {
+	cases := map[string]struct {
+		inUserID    string
+		inNoteToken string
+		expected    func(error)
+	}{
+		"Success": {
+			inUserID:    string(security.Hash("test@mail.ru")),
+			inNoteToken: "1",
+			expected: func(actualErr error) {
+				require.Equal(t, nil, actualErr)
+			},
+		},
+	}
+
+	notesStorage := storage.NewNotesStorage()
+	usersNotesStorage := storage.NewUsersNotesStorage(notesStorage)
+	notesService := NewNotesApp(notesStorage, usersNotesStorage)
+
+	for name, tc := range cases {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			err := notesService.DeleteNote(tc.inUserID, tc.inNoteToken)
+			tc.expected(err)
+
+		})
+		log.Println("SUCCESS")
+	}
+}

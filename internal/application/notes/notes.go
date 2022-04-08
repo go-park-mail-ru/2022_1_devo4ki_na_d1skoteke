@@ -32,7 +32,7 @@ func (n *NotesApp) FindByToken(token string) (entity.Note, error) {
 
 func (n *NotesApp) AllNotesByUserID(userID string) ([]entity.Note, error) {
 	notes, err := n.usersNotesRepository.AllNotesByUserID(userID)
-	if errors.Is(err, storage.CannotFindNotesForUser) {
+	if errors.Is(err, storage.ErrFindNotesForUser) {
 		return []entity.Note{}, nil
 	}
 	return notes, err
@@ -40,7 +40,7 @@ func (n *NotesApp) AllNotesByUserID(userID string) ([]entity.Note, error) {
 
 func (n *NotesApp) TokensByUserID(hashedEmail string) ([]string, error) {
 	tokens, err := n.usersNotesRepository.TokensByUserID(hashedEmail)
-	if errors.Is(err, storage.CannotFindNotesForUser) {
+	if errors.Is(err, storage.ErrFindNotesForUser) {
 		return []string{}, nil
 	}
 	return tokens, err
