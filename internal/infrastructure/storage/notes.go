@@ -6,6 +6,8 @@ import (
 	"sync"
 )
 
+var ErrNoNoteInDB = errors.New("no note in DB with this token")
+
 type NotesStorage struct {
 	data sync.Map
 }
@@ -24,7 +26,7 @@ func NewNotesStorage() *NotesStorage {
 func (store *NotesStorage) Find(token string) (entity.Note, error) {
 	rawNote, ok := store.data.Load(token)
 	if !ok {
-		return entity.Note{}, errors.New("no note in DB with this token")
+		return entity.Note{}, ErrNoNoteInDB
 	}
 	note := rawNote.(entity.Note)
 	return note, nil

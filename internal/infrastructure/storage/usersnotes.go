@@ -12,8 +12,10 @@ type UsersNotesStorage struct {
 	notes *NotesStorage
 }
 
-var CannotFindNotesForUser = errors.New("cannot find notes")
-var CannotFindNoteByToken = errors.New("cannot find note by token")
+var ErrFindNotesForUser = errors.New("cannot find notes")
+var ErrFindNoteByToken = errors.New("cannot find note by token")
+var ErrFindUser = errors.New("can't find user")
+var ErrFindTokenInUsersNotes = errors.New("can't find token in user's notes")
 
 func NewUsersNotesStorage(notesStorage *NotesStorage) *UsersNotesStorage {
 	storage := &UsersNotesStorage{
@@ -29,7 +31,7 @@ func NewUsersNotesStorage(notesStorage *NotesStorage) *UsersNotesStorage {
 func (storage *UsersNotesStorage) AllNotesByUserID(hashedEmail string) ([]entity.Note, error) {
 	rawNotesIDs, ok := storage.data.Load(hashedEmail)
 	if !ok {
-		return []entity.Note{}, CannotFindNotesForUser
+		return []entity.Note{}, ErrFindNotesForUser
 	}
 
 	notesIDs := rawNotesIDs.([]string)
@@ -38,7 +40,7 @@ func (storage *UsersNotesStorage) AllNotesByUserID(hashedEmail string) ([]entity
 	for _, id := range notesIDs {
 		note, err := storage.notes.Find(id)
 		if err != nil {
-			return []entity.Note{}, CannotFindNoteByToken
+			return []entity.Note{}, ErrFindNoteByToken
 		}
 		notes = append(notes, note)
 	}
@@ -49,7 +51,7 @@ func (storage *UsersNotesStorage) AllNotesByUserID(hashedEmail string) ([]entity
 func (storage *UsersNotesStorage) TokensByUserID(hashedEmail string) ([]string, error) {
 	rawNotesIDs, ok := storage.data.Load(hashedEmail)
 	if !ok {
-		return []string{}, CannotFindNotesForUser
+		return []string{}, ErrFindNotesForUser
 	}
 	return rawNotesIDs.([]string), nil
 }
@@ -77,13 +79,13 @@ func findNote(NotesIDs []string, token string) (int, bool) {
 func (storage *UsersNotesStorage) DeleteLink(userID string, noteToken string) error {
 	rawNotesIDs, ok := storage.data.Load(userID)
 	if !ok {
-		return errors.New("can't find user")
+		return ErrFindUser
 	}
 	NotesIDs := rawNotesIDs.([]string)
 
 	noteIndex, ok := findNote(NotesIDs, noteToken)
 	if !ok {
-		return errors.New("can't find token in user's notes")
+		return ErrFindTokenInUsersNotes
 	}
 
 	NotesIDs[noteIndex] = NotesIDs[len(NotesIDs)-1]
