@@ -21,7 +21,7 @@ func NewUserService(userRepository repository.UserRepository, securityManager se
 	}
 }
 
-func (u *UserService) SaveUser(registerUser entity.RegisterUserRequest) (entity.User, error) {
+func (u *UserService) Save(registerUser entity.RegisterUserRequest) (entity.User, error) {
 	if err := registerUser.Validate(); err != nil {
 		return entity.User{}, err
 	}
@@ -33,17 +33,25 @@ func (u *UserService) SaveUser(registerUser entity.RegisterUserRequest) (entity.
 	}
 	user.Password = string(u.securityManager.Hash(user.Password))
 
-	if _, err := u.userRepository.GetUser(user.Email); err == nil {
+	if _, err := u.userRepository.Get(user.Email); err == nil {
 		return user, UserAlreadyRegistered
 	}
 
-	savedUser, err := u.userRepository.SaveUser(user)
+	savedUser, err := u.userRepository.Save(user)
 	if err != nil {
 		return savedUser, err
 	}
 	return savedUser, nil
 }
 
-func (u *UserService) GetUser(email string) (entity.User, error) {
-	return u.userRepository.GetUser(email)
+func (u *UserService) Get(email string) (entity.User, error) {
+	return u.userRepository.Get(email)
+}
+
+func (u *UserService) Update(user entity.User) (entity.User, error) {
+	return u.userRepository.Update(user)
+}
+
+func (u *UserService) Delete(user entity.User) error {
+	return u.userRepository.Delete(user)
 }
