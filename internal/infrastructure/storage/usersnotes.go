@@ -2,14 +2,16 @@ package storage
 
 import (
 	"cotion/internal/domain/entity"
+	"cotion/internal/domain/repository"
 	"cotion/internal/pkg/security"
 	"errors"
+	"fmt"
 	"sync"
 )
 
 type UsersNotesStorage struct {
 	data  sync.Map
-	notes *NotesStorage
+	notes repository.NotesRepository
 }
 
 var ErrFindNotesForUser = errors.New("cannot find notes")
@@ -17,7 +19,7 @@ var ErrFindNoteByToken = errors.New("cannot find note by token")
 var ErrFindUser = errors.New("can't find user")
 var ErrFindTokenInUsersNotes = errors.New("can't find token in user's notes")
 
-func NewUsersNotesStorage(notesStorage *NotesStorage) *UsersNotesStorage {
+func NewUsersNotesStorage(notesStorage repository.NotesRepository) *UsersNotesStorage {
 	storage := &UsersNotesStorage{
 		data:  sync.Map{},
 		notes: notesStorage,
@@ -35,6 +37,7 @@ func (storage *UsersNotesStorage) AllNotesByUserID(hashedEmail string) ([]entity
 	}
 
 	notesIDs := rawNotesIDs.([]string)
+	fmt.Println(notesIDs)
 	notes := make([]entity.Note, 0)
 
 	for _, id := range notesIDs {
@@ -64,6 +67,7 @@ func (storage *UsersNotesStorage) AddLink(userID string, noteToken string) error
 	NotesIDs := rawNotesIDs.([]string)
 	NotesIDs = append(NotesIDs, noteToken)
 	storage.data.Store(userID, NotesIDs)
+	fmt.Println("Store=", userID, ": ", noteToken)
 	return nil
 }
 

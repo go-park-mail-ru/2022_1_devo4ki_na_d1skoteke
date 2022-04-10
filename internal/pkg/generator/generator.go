@@ -1,6 +1,10 @@
 package generator
 
-import "math/rand"
+import (
+	"math/rand"
+	"strconv"
+	"time"
+)
 
 const (
 	defaultLength = 10
@@ -8,20 +12,22 @@ const (
 
 var (
 	letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	source      = rand.NewSource(time.Now().UnixNano())
+	random      = rand.New(source)
 )
 
 func RandSID(n int) string {
 	sid := make([]rune, n)
 	for i := range sid {
-		sid[i] = letterRunes[rand.Intn(len(letterRunes))]
+		sid[i] = letterRunes[random.Intn(len(letterRunes))]
 	}
 	return string(sid)
 }
 
 func RandToken() string {
-	token := make([]rune, defaultLength)
-	for i := range token {
-		token[i] = rune(rand.Intn(9))
+	token := ""
+	for i := 1; i < defaultLength; i++ {
+		token += strconv.Itoa(random.Intn(9))
 	}
-	return string(token)
+	return token
 }
