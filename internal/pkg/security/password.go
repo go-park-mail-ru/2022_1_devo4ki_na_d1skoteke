@@ -1,9 +1,10 @@
 package security
 
 import (
-	"bytes"
 	"crypto/sha256"
+	"encoding/hex"
 	"errors"
+	"strings"
 )
 
 type SimpleSecurityManager struct{}
@@ -17,19 +18,19 @@ func NewSimpleSecurityManager() *SimpleSecurityManager {
 
 var wrongPassword = errors.New("wrong password")
 
-func (s SimpleSecurityManager) Hash(password string) []byte {
+func (s SimpleSecurityManager) Hash(password string) string {
 	hash := sha256.Sum256([]byte(password))
-	return hash[:]
+	return hex.EncodeToString(hash[:])
 }
 
 func (s SimpleSecurityManager) ComparePasswords(hashedPassword string, password string) error {
-	if bytes.Equal([]byte(hashedPassword), s.Hash(password)) {
+	if strings.Compare(hashedPassword, s.Hash(password)) == 0 {
 		return nil
 	}
 	return wrongPassword
 }
 
-func Hash(password string) []byte {
+func Hash(password string) string {
 	hash := sha256.Sum256([]byte(password))
-	return hash[:]
+	return hex.EncodeToString(hash[:])
 }

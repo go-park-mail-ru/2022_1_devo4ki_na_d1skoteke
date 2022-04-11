@@ -54,11 +54,11 @@ func (n *NotesApp) SaveNote(userID string, noteRequest entity.NoteRequest) error
 		Body: noteRequest.Body,
 	}
 
-	if err := n.notesRepository.Save(newToken, newNote); err == nil {
+	if err := n.notesRepository.Save(newToken, newNote); err != nil {
 		return err
 	}
 
-	if err := n.usersNotesRepository.AddLink(userID, newToken); err == nil {
+	if err := n.usersNotesRepository.AddLink(userID, newToken); err != nil {
 		return err
 	}
 	return nil

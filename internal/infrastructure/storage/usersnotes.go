@@ -2,6 +2,7 @@ package storage
 
 import (
 	"cotion/internal/domain/entity"
+	"cotion/internal/domain/repository"
 	"cotion/internal/pkg/security"
 	"errors"
 	"sync"
@@ -9,7 +10,7 @@ import (
 
 type UsersNotesStorage struct {
 	data  sync.Map
-	notes *NotesStorage
+	notes repository.NotesRepository
 }
 
 var ErrFindNotesForUser = errors.New("cannot find notes")
@@ -17,7 +18,7 @@ var ErrFindNoteByToken = errors.New("cannot find note by token")
 var ErrFindUser = errors.New("can't find user")
 var ErrFindTokenInUsersNotes = errors.New("can't find token in user's notes")
 
-func NewUsersNotesStorage(notesStorage *NotesStorage) *UsersNotesStorage {
+func NewUsersNotesStorage(notesStorage repository.NotesRepository) *UsersNotesStorage {
 	storage := &UsersNotesStorage{
 		data:  sync.Map{},
 		notes: notesStorage,
