@@ -9,7 +9,6 @@ import (
 	"cotion/internal/infrastructure/psql"
 	"cotion/internal/infrastructure/storage"
 	"cotion/internal/pkg/security"
-	"database/sql"
 	"fmt"
 	"github.com/gorilla/mux"
 	"log"
@@ -18,28 +17,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
-	host     = "0.0.0.0"
-	port     = 5432
-	user     = "user"
-	password = "love"
-	dbname   = "cotion"
-)
-
 func main() {
 	router := mux.NewRouter()
 
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
-
-	db, err := sql.Open("postgres", psqlInfo)
+	db, err := psql.Connect()
 	if err != nil {
-		log.Fatal(err)
-	}
-	db.SetMaxOpenConns(10)
-
-	if err := db.Ping(); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("Successful connect to database.")

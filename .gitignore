@@ -19,3 +19,4 @@ profile.cov
 cover
 cover_wo_mock
 maintest.go
+.env
