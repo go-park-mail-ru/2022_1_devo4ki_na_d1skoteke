@@ -5,7 +5,6 @@ import (
 	"cotion/internal/domain/repository"
 	"cotion/internal/pkg/security"
 	"errors"
-	"fmt"
 	"sync"
 )
 
@@ -37,7 +36,6 @@ func (storage *UsersNotesStorage) AllNotesByUserID(hashedEmail string) ([]entity
 	}
 
 	notesIDs := rawNotesIDs.([]string)
-	fmt.Println(notesIDs)
 	notes := make([]entity.Note, 0)
 
 	for _, id := range notesIDs {
@@ -67,7 +65,6 @@ func (storage *UsersNotesStorage) AddLink(userID string, noteToken string) error
 	NotesIDs := rawNotesIDs.([]string)
 	NotesIDs = append(NotesIDs, noteToken)
 	storage.data.Store(userID, NotesIDs)
-	fmt.Println("Store=", userID, ": ", noteToken)
 	return nil
 }
 

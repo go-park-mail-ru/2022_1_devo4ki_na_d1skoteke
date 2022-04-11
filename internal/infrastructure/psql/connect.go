@@ -8,25 +8,40 @@ import (
 )
 
 const (
-	host    = "postgres"
-	port    = 5432
-	dbname  = "cotion"
-	userKey = "user"
-	passKey = "pass"
+	ENV_PG_HOST     = "host"
+	ENV_PG_PORT     = "port"
+	ENV_PG_DBNAME   = "dbname"
+	ENV_PG_USER     = "user"
+	ENV_PG_PASSWORD = "pass"
 )
 
-var NoConnectData = errors.New("There isn't connect data in *.env file")
+var ErrNoHost = errors.New("There isn't host in *.env file")
+var ErrNoPort = errors.New("There isn't port in *.env file")
+var ErrNoDBName = errors.New("There isn't database name in *.env file")
+var ErrNoUser = errors.New("There isn't user in *.env file")
+var ErrNoPass = errors.New("There isn't password in *.env file")
 
 func ConnectConfig() (string, error) {
-	user := os.Getenv(userKey)
-	password := os.Getenv(passKey)
-	if user == "" || password == "" {
-		return "", NoConnectData
+	var host, port, dbname, user, pass string
+	if host = os.Getenv(ENV_PG_HOST); host == "" {
+		return "", ErrNoHost
+	}
+	if port = os.Getenv(ENV_PG_PORT); port == "" {
+		return "", ErrNoPort
+	}
+	if dbname = os.Getenv(ENV_PG_DBNAME); dbname == "" {
+		return "", ErrNoDBName
+	}
+	if user = os.Getenv(ENV_PG_USER); user == "" {
+		return "", ErrNoUser
+	}
+	if pass = os.Getenv(ENV_PG_PASSWORD); pass == "" {
+		return "", ErrNoPass
 	}
 
-	config := fmt.Sprintf("host=%s port=%d user=%s "+
+	config := fmt.Sprintf("host=%s port=%s user=%s "+
 		"password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
+		host, port, user, pass, dbname)
 	return config, nil
 }
 
