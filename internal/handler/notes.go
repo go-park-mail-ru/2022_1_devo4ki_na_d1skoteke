@@ -77,7 +77,7 @@ func (h *NotesHandler) CreateNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := string(h.secureService.Hash(user.Email))
+	userID := h.secureService.Hash(user.Email)
 	if err := h.notesService.SaveNote(userID, noteRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

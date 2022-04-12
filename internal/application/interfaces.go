@@ -16,10 +16,10 @@ type NotesAppManager interface {
 }
 
 type UserAppManager interface {
-	Save(registerUser entity.RegisterUserRequest) (entity.User, error)
-	Get(email string) (entity.User, error)
-	Update(user entity.User) (entity.User, error)
-	Delete(user entity.User) error
+	Save(registerUser entity.UserRequest) error
+	Get(userID string) (entity.User, error)
+	Update(curUser entity.User, user entity.UserRequest) error
+	Delete(userID string) error
 }
 
 type AuthAppManager interface {

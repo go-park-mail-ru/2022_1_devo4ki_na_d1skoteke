@@ -31,7 +31,7 @@ func NewAuthApp(sessionRepo repository.SessionRepository, userServ application.U
 }
 
 func (au *AuthApp) Login(email string, password string) (*http.Cookie, error) {
-	user, err := au.userService.Get(email)
+	user, err := au.userService.Get(au.securityManager.Hash(email))
 	if err != nil {
 		return &http.Cookie{}, err
 	}
@@ -72,7 +72,7 @@ func (au *AuthApp) Auth(sessionCookie *http.Cookie) (entity.User, bool) {
 		return entity.User{}, false
 	}
 
-	user, err := au.userService.Get(session.UserEmail)
+	user, err := au.userService.Get(au.securityManager.Hash(session.UserEmail))
 	if err != nil {
 		return entity.User{}, false
 	}

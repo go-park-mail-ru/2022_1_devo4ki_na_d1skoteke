@@ -9,10 +9,10 @@ type SessionRepository interface {
 }
 
 type UserRepository interface {
-	Save(user entity.User) (entity.User, error)
-	Get(email string) (entity.User, error)
-	Update(user entity.User) (entity.User, error)
-	Delete(user entity.User) error
+	Save(user entity.User) error
+	Get(userID string) (entity.User, error)
+	Update(user entity.User) error
+	Delete(userID string) error
 }
 
 type UsersNotesRepository interface {

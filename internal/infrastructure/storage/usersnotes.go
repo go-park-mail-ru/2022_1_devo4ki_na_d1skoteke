@@ -23,9 +23,9 @@ func NewUsersNotesStorage(notesStorage repository.NotesRepository) *UsersNotesSt
 		data:  sync.Map{},
 		notes: notesStorage,
 	}
-	storage.data.Store(string(security.Hash("test@mail.ru")), []string{"1", "3"})
-	storage.data.Store(string(security.Hash("test3@mail.ru")), []string{"0"})
-	storage.data.Store(string(security.Hash("nikita@mail.ru")), []string{"2"})
+	storage.data.Store(security.Hash("test@mail.ru"), []string{"1", "3"})
+	storage.data.Store(security.Hash("test3@mail.ru"), []string{"0"})
+	storage.data.Store(security.Hash("nikita@mail.ru"), []string{"2"})
 	return storage
 }
 
@@ -61,6 +61,7 @@ func (storage *UsersNotesStorage) AddLink(userID string, noteToken string) error
 	rawNotesIDs, ok := storage.data.Load(userID)
 	if !ok {
 		storage.data.Store(userID, []string{noteToken})
+		return nil
 	}
 	NotesIDs := rawNotesIDs.([]string)
 	NotesIDs = append(NotesIDs, noteToken)

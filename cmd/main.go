@@ -28,7 +28,7 @@ func main() {
 
 	securityManager := security.NewSimpleSecurityManager()
 
-	userStorage := storage.NewUserCacheStorage(securityManager)
+	userStorage := psql.NewUserStorage(db)
 	notesStorage := psql.NewNotesStorage(db)
 	usersNotesStorage := storage.NewUsersNotesStorage(notesStorage)
 	sessionStorage := storage.NewSessionStorage()
@@ -50,13 +50,14 @@ func main() {
 	routerAPI.HandleFunc("/note", amw.Auth(notesHandler.CreateNote)).Methods("POST")
 	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", amw.Auth(notesHandler.DeleteNote)).Methods("DELETE")
 
+	routerAPI.HandleFunc("/users/signup", amw.NotAuth(userHandler.SignUp)).Methods("POST")
+	routerAPI.HandleFunc("/user", amw.Auth(userHandler.GetUser)).Methods("GET")
+	routerAPI.HandleFunc("/user", amw.Auth(userHandler.UpdateUser)).Methods("PUT")
+	routerAPI.HandleFunc("/user", amw.Auth(userHandler.DeleteUser)).Methods("DELETE")
+
 	routerAPI.HandleFunc("/users/login", amw.NotAuth(loginHandler.Login)).Methods("POST")
 	routerAPI.HandleFunc("/users/logout", amw.Auth(loginHandler.Logout)).Methods("GET")
 	routerAPI.HandleFunc("/users/auth", loginHandler.Auth).Methods("GET")
-	routerAPI.HandleFunc("/users/signup", amw.NotAuth(userHandler.SignUp)).Methods("POST")
-
-	routerAPI.HandleFunc("/user/{user-id:[0-9]+}", amw.Auth(userHandler.UpdateUser)).Methods("POST")
-	routerAPI.HandleFunc("/user/{user-id:[0-9]+}", amw.Auth(userHandler.DeleteUser)).Methods("DELETE")
 
 	router.Use(middleware.CorsMiddleware())
 
