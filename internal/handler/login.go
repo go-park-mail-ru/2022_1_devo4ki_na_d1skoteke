@@ -4,12 +4,17 @@ import (
 	"cotion/internal/application"
 	"cotion/internal/domain/entity"
 	"encoding/json"
+	"errors"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
 const (
 	sessionCookie = "session_id"
 )
+
+var ErrDecode = errors.New("problem with decode request")
+var ErrNoLoginData = errors.New("no email or password in request")
 
 type LoginHandler struct {
 	authService application.AuthAppManager
@@ -24,12 +29,22 @@ func NewLoginHandler(au application.AuthAppManager) *LoginHandler {
 func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 	user := entity.User{}
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		http.Error(w, "problem with decode request", http.StatusBadRequest)
+		http.Error(w, ErrDecode.Error(), http.StatusBadRequest)
+		log.WithFields(log.Fields{
+			"package":  "handler login",
+			"function": "Login",
+			"request":  r.Body,
+		}).Warning(err)
 		return
 	}
 
 	if !user.IsEmail() || !user.IsPassword() {
-		http.Error(w, "no email or password in request", http.StatusBadRequest)
+		http.Error(w, ErrNoLoginData.Error(), http.StatusBadRequest)
+		log.WithFields(log.Fields{
+			"package":     "handler login",
+			"function":    "Login",
+			"userRequest": user,
+		}).Warning(ErrNoLoginData)
 		return
 	}
 
@@ -47,11 +62,20 @@ func (h *LoginHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	sessionCookie, err := r.Cookie(sessionCookie)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
+		log.WithFields(log.Fields{
+			"package":  "handler login",
+			"function": "Logout",
+		}).Error(err)
 		return
 	}
+
 	newSessionCookie, err := h.authService.Logout(sessionCookie)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.WithFields(log.Fields{
+			"package":  "handler login",
+			"function": "Logout",
+		}).Error(err)
 		return
 	}
 

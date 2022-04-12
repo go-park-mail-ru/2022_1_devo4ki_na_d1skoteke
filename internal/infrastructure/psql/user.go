@@ -3,6 +3,7 @@ package psql
 import (
 	"cotion/internal/domain/entity"
 	"database/sql"
+	log "github.com/sirupsen/logrus"
 )
 
 type UserStorage struct {
@@ -19,6 +20,10 @@ const querySaveUser = "INSERT INTO cotionuser(userid, username, email, password)
 
 func (store *UserStorage) Save(user entity.User) error {
 	_, err := store.DB.Exec(querySaveUser, user.UserID, user.Username, user.Email, user.Password)
+	log.WithFields(log.Fields{
+		"package":  "psql user",
+		"function": "Save",
+	}).Error(err)
 	return err
 }
 
@@ -37,6 +42,10 @@ const queryUpdateUser = "UPDATE cotionuser SET username = $1, password = $2 wher
 
 func (store *UserStorage) Update(user entity.User) error {
 	_, err := store.DB.Exec(queryUpdateUser, user.Username, user.Password, user.UserID)
+	log.WithFields(log.Fields{
+		"package":  "psql user",
+		"function": "Update",
+	}).Error(err)
 	return err
 }
 
@@ -44,5 +53,9 @@ const queryDeleteUser = "DELETE FROM cotionuser where userid = $1"
 
 func (store *UserStorage) Delete(userID string) error {
 	_, err := store.DB.Exec(queryDeleteUser, userID)
+	log.WithFields(log.Fields{
+		"package":  "psql user",
+		"function": "Delete",
+	}).Error(err)
 	return err
 }

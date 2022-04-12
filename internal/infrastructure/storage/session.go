@@ -3,8 +3,11 @@ package storage
 import (
 	"cotion/internal/domain/entity"
 	"errors"
+	log "github.com/sirupsen/logrus"
 	"sync"
 )
+
+var ErrCreateSession = errors.New("already has session with this SID")
 
 type SessionStorage struct {
 	data sync.Map
@@ -20,7 +23,12 @@ func (s *SessionStorage) NewSession(SID string, user entity.User) (entity.Sessio
 		UserEmail: user.Email,
 	})
 	if loaded {
-		return entity.Session{}, errors.New("already has session with this SID")
+		log.WithFields(log.Fields{
+			"package":  "storage session",
+			"function": "NewSession",
+			"sid":      SID,
+		}).Error(ErrCreateSession)
+		return entity.Session{}, ErrCreateSession
 	}
 	return session.(entity.Session), nil
 }

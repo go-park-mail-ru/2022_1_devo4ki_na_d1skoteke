@@ -4,6 +4,7 @@ import (
 	"cotion/internal/domain/entity"
 	"database/sql"
 	"errors"
+	log "github.com/sirupsen/logrus"
 )
 
 var ErrNoNoteInDB = errors.New("no note in DB with this token")
@@ -24,6 +25,11 @@ func (store *NotesStorage) Find(token string) (entity.Note, error) {
 	row := store.DB.QueryRow(queryFindNote, token)
 	note := entity.Note{}
 	if err := row.Scan(&note.Name, &note.Body); err != nil {
+		log.WithFields(log.Fields{
+			"package":   "psql notes",
+			"function":  "Find",
+			"noteToken": token,
+		}).Warning(err)
 		return entity.Note{}, err
 	}
 	return note, nil
@@ -32,20 +38,40 @@ func (store *NotesStorage) Find(token string) (entity.Note, error) {
 const querySaveNote = "INSERT INTO note(noteID, name, body) VALUES ($1, $2, $3)"
 
 func (store *NotesStorage) Save(token string, note entity.Note) error {
-	_, err := store.DB.Exec(querySaveNote, token, note.Name, note.Body)
-	return err
+	if _, err := store.DB.Exec(querySaveNote, token, note.Name, note.Body); err != nil {
+		log.WithFields(log.Fields{
+			"package":   "psql notes",
+			"function":  "Save",
+			"note":      note,
+			"noteToken": token,
+		}).Error(err)
+		return err
+	}
+	return nil
 }
 
 const queryUpdateNote = "UPDATE note SET name = $1, body = $2 WHERE noteID = $3"
 
 func (store *NotesStorage) Update(token string, note entity.Note) error {
-	_, err := store.DB.Exec(queryUpdateNote, note.Name, note.Body, token)
-	return err
+	if _, err := store.DB.Exec(queryUpdateNote, note.Name, note.Body, token); err != nil {
+		log.WithFields(log.Fields{
+			"package":  "psql notes",
+			"function": "Update",
+		}).Error(err)
+		return err
+	}
+	return nil
 }
 
 const queryDeleteNote = "DELETE FROM note where noteid = $1"
 
 func (store *NotesStorage) Delete(token string) error {
-	_, err := store.DB.Exec(queryDeleteNote, token)
-	return err
+	if _, err := store.DB.Exec(queryDeleteNote, token); err != nil {
+		log.WithFields(log.Fields{
+			"package":  "psql notes",
+			"function": "Delete",
+		}).Error(err)
+		return err
+	}
+	return nil
 }
