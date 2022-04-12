@@ -27,22 +27,21 @@ func NewLoginHandler(au application.AuthAppManager) *LoginHandler {
 }
 
 func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
+	logger := log.WithFields(log.Fields{
+		"package":  packageName,
+		"function": "Login",
+	})
+
 	user := entity.User{}
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, ErrDecode.Error(), http.StatusBadRequest)
-		log.WithFields(log.Fields{
-			"package":  "handler login",
-			"function": "Login",
-			"request":  r.Body,
-		}).Warning(err)
+		logger.Warning(err)
 		return
 	}
 
 	if !user.IsEmail() || !user.IsPassword() {
 		http.Error(w, ErrNoLoginData.Error(), http.StatusBadRequest)
-		log.WithFields(log.Fields{
-			"package":     "handler login",
-			"function":    "Login",
+		logger.WithFields(log.Fields{
 			"userRequest": user,
 		}).Warning(ErrNoLoginData)
 		return
@@ -59,23 +58,22 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *LoginHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	logger := log.WithFields(log.Fields{
+		"package":  packageName,
+		"function": "Logout",
+	})
+
 	sessionCookie, err := r.Cookie(sessionCookie)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
-		log.WithFields(log.Fields{
-			"package":  "handler login",
-			"function": "Logout",
-		}).Error(err)
+		logger.Error(err)
 		return
 	}
 
 	newSessionCookie, err := h.authService.Logout(sessionCookie)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.WithFields(log.Fields{
-			"package":  "handler login",
-			"function": "Logout",
-		}).Error(err)
+		logger.Error(err)
 		return
 	}
 

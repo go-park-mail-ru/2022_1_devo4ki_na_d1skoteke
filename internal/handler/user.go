@@ -9,6 +9,8 @@ import (
 	"net/http"
 )
 
+const packageName = "handler"
+
 type UserHandler struct {
 	userService application.UserAppManager
 }
@@ -20,23 +22,20 @@ func NewUserHandler(userService application.UserAppManager) *UserHandler {
 }
 
 func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
+	logger := log.WithFields(log.Fields{
+		"package":  packageName,
+		"function": "SignUp",
+	})
 	var newUser entity.UserRequest
 	if err := newUser.Bind(r); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.WithFields(log.Fields{
-			"package":  "handler user",
-			"function": "SignUp",
-			"request":  r.Body,
-		}).Warning(err)
+		logger.Warning(err)
 		return
 	}
 
 	if err := h.userService.Save(newUser); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.WithFields(log.Fields{
-			"package":  "handler user",
-			"function": "SignUp",
-		}).Warning(err)
+		logger.Warning(err)
 		return
 	}
 
@@ -50,7 +49,7 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(user); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.WithFields(log.Fields{
-			"package":  "handler user",
+			"package":  packageName,
 			"function": "GetUser",
 			"user":     user,
 		}).Error(err)
@@ -59,25 +58,23 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	logger := log.WithFields(log.Fields{
+		"package":  packageName,
+		"function": "UpdateUser",
+	})
+
 	curUser := r.Context().Value("user").(entity.User)
 
 	var updateUser entity.UserRequest
 	if err := updateUser.Bind(r); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.WithFields(log.Fields{
-			"package":  "handler user",
-			"function": "UpdateUser",
-			"request":  r.Body,
-		}).Warning(err)
+		logger.Warning(err)
 		return
 	}
 
 	if err := h.userService.Update(curUser, updateUser); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.WithFields(log.Fields{
-			"package":  "handler user",
-			"function": "UpdateUser",
-		}).Error(err)
+		logger.Error(err)
 		return
 	}
 
@@ -90,7 +87,7 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	if err := h.userService.Delete(security.Hash(user.Email)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.WithFields(log.Fields{
-			"package":  "handler user",
+			"package":  packageName,
 			"function": "Delete",
 		}).Error(err)
 		return

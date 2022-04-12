@@ -30,16 +30,18 @@ func NewNotesHandler(notesServ application.NotesAppManager, authServ application
 }
 
 func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request) {
+	logger := log.WithFields(log.Fields{
+		"package":  packageName,
+		"function": "ReceiveSingleNote",
+	})
+
 	w.Header().Add("Content-Type", "application/json")
 	user := r.Context().Value("user").(entity.User)
 	vars := mux.Vars(r)
 	token, ok := vars[noteToken]
 	if !ok {
 		http.Error(w, NoTokenError.Error(), http.StatusBadRequest)
-		log.WithFields(log.Fields{
-			"package":  "handler note",
-			"function": "ReceiveSingleNote",
-		}).Warning(NoTokenError)
+		logger.Warning(NoTokenError)
 		return
 	}
 
@@ -52,15 +54,17 @@ func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request)
 
 	if err := json.NewEncoder(w).Encode(note); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.WithFields(log.Fields{
-			"package":  "handler note",
-			"function": "ReceiveSingleNote",
-		}).Error(err)
+		logger.Error(err)
 		return
 	}
 }
 
 func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
+	logger := log.WithFields(log.Fields{
+		"package":  packageName,
+		"function": "MainPage",
+	})
+
 	w.Header().Add("Content-Type", "application/json")
 
 	user := r.Context().Value("user").(entity.User)
@@ -68,33 +72,31 @@ func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
 	notes, err := h.notesService.AllNotesByUserID(security.Hash(user.Email))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.WithFields(log.Fields{
-			"package":  "handler note",
-			"function": "MainPage",
-		}).Error(err)
+		logger.Error(err)
 		return
 	}
 
 	if err := json.NewEncoder(w).Encode(entity.Notes{Notes: notes}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.WithFields(log.Fields{
-			"package":  "handler note",
-			"function": "MainPage",
-			"notes":    entity.Notes{Notes: notes},
+		logger.WithFields(log.Fields{
+			"notes": entity.Notes{Notes: notes},
 		}).Error(err)
 		return
 	}
 }
 
 func (h *NotesHandler) CreateNote(w http.ResponseWriter, r *http.Request) {
+	logger := log.WithFields(log.Fields{
+		"package":  packageName,
+		"function": "CreateNote",
+	})
+
 	user := r.Context().Value("user").(entity.User)
 
 	var noteRequest entity.NoteRequest
 	if err := noteRequest.Bind(r); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.WithFields(log.Fields{
-			"package":     "handler note",
-			"function":    "CreateNote",
+		logger.WithFields(log.Fields{
 			"noteRequest": noteRequest,
 		}).Warning(err)
 		return
@@ -103,10 +105,7 @@ func (h *NotesHandler) CreateNote(w http.ResponseWriter, r *http.Request) {
 	userID := h.secureService.Hash(user.Email)
 	if err := h.notesService.SaveNote(userID, noteRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.WithFields(log.Fields{
-			"package":  "handler note",
-			"function": "CreateNote",
-		}).Error(err)
+		logger.Error(err)
 		return
 	}
 
@@ -114,35 +113,31 @@ func (h *NotesHandler) CreateNote(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *NotesHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
+	logger := log.WithFields(log.Fields{
+		"package":  packageName,
+		"function": "UpdateNote",
+	})
+
 	user := r.Context().Value("user").(entity.User)
 	vars := mux.Vars(r)
 	token, ok := vars[noteToken]
 	if !ok {
 		http.Error(w, NoTokenError.Error(), http.StatusBadRequest)
-		log.WithFields(log.Fields{
-			"package":  "handler note",
-			"function": "UpdateNote",
-		}).Warning(NoTokenError)
+		logger.Warning(NoTokenError)
 		return
 	}
 
 	noteRequest := entity.NoteRequest{}
 	if err := noteRequest.Bind(r); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.WithFields(log.Fields{
-			"package":  "handler note",
-			"function": "UpdateNote",
-		}).Warning(err)
+		logger.Warning(err)
 		return
 	}
 
 	userID := string(h.secureService.Hash(user.Email))
 	if err := h.notesService.UpdateNote(userID, token, noteRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.WithFields(log.Fields{
-			"package":  "handler notes",
-			"function": "UpdateNote",
-		}).Warning(err)
+		logger.Warning(err)
 		return
 	}
 
@@ -150,25 +145,24 @@ func (h *NotesHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *NotesHandler) DeleteNote(w http.ResponseWriter, r *http.Request) {
+	logger := log.WithFields(log.Fields{
+		"package":  packageName,
+		"function": "DeleteNote",
+	})
+
 	user := r.Context().Value("user").(entity.User)
 	vars := mux.Vars(r)
 	token, ok := vars[noteToken]
 	if !ok {
 		http.Error(w, NoTokenError.Error(), http.StatusBadRequest)
-		log.WithFields(log.Fields{
-			"package":  "handler note",
-			"function": "DeleteNote",
-		}).Warning(NoTokenError)
+		logger.Warning(NoTokenError)
 		return
 	}
 
 	userID := h.secureService.Hash(user.Email)
 	if err := h.notesService.DeleteNote(userID, token); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.WithFields(log.Fields{
-			"package":  "handler note",
-			"function": "DeleteNote",
-		}).Warning(err)
+		logger.Warning(err)
 		return
 	}
 

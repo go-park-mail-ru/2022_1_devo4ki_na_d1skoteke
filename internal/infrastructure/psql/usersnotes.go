@@ -24,7 +24,7 @@ const queryAddLink = "INSERT INTO usersnotes(userid, noteid) VALUES ($1, $2)"
 func (store *UsersNotesStorage) AddLink(userID string, noteToken string) error {
 	_, err := store.DB.Exec(queryAddLink, userID, noteToken)
 	log.WithFields(log.Fields{
-		"package":  "psql usersnotes",
+		"package":  packageName,
 		"function": "AddLink",
 		"userID":   userID,
 		"noteID":   noteToken,
@@ -37,7 +37,7 @@ const queryDeleteLink = "DELETE FROM usersnotes WHERE userid = $1 AND noteid = $
 func (store *UsersNotesStorage) DeleteLink(userID string, noteToken string) error {
 	_, err := store.DB.Exec(queryDeleteLink, userID, noteToken)
 	log.WithFields(log.Fields{
-		"package":  "psql usersnotes",
+		"package":  packageName,
 		"function": "DeleteLink",
 	}).Error(err)
 	return err
@@ -49,7 +49,7 @@ func (store *UsersNotesStorage) CheckLink(userID string, noteToken string) bool 
 	row := store.DB.QueryRow(queryCheckLink, userID, noteToken)
 	if row.Scan() == sql.ErrNoRows {
 		log.WithFields(log.Fields{
-			"package":   "psql usersnotes",
+			"package":   packageName,
 			"function":  "CheckLink",
 			"userID":    userID,
 			"noteToken": noteToken,
@@ -62,12 +62,14 @@ func (store *UsersNotesStorage) CheckLink(userID string, noteToken string) bool 
 const queryFindNotes = "SELECT name, body FROM usersnotes JOIN note ON usersnotes.noteid = note.noteid WHERE userid = $1"
 
 func (store *UsersNotesStorage) AllNotesByUserID(userID string) ([]entity.Note, error) {
+	logger := log.WithFields(log.Fields{
+		"package":  packageName,
+		"function": "AllNotesByUserID",
+	})
+
 	rows, err := store.DB.Query(queryFindNotes, userID)
 	if err != nil {
-		log.WithFields(log.Fields{
-			"package":  "psql usersnotes",
-			"function": "AllNotesByUserID",
-		}).Error(err)
+		logger.Error(err)
 		return []entity.Note{}, err
 	}
 	defer rows.Close()
@@ -76,20 +78,14 @@ func (store *UsersNotesStorage) AllNotesByUserID(userID string) ([]entity.Note, 
 	for rows.Next() {
 		var note entity.Note
 		if err := rows.Scan(&note.Name, &note.Body); err != nil {
-			log.WithFields(log.Fields{
-				"package":  "psql usersnotes",
-				"function": "AllNotesByUserID",
-			}).Error(err)
+			logger.Error(err)
 			return []entity.Note{}, err
 		}
 		notes = append(notes, note)
 	}
 
 	if err := rows.Err(); err != nil {
-		log.WithFields(log.Fields{
-			"package":  "psql usersnotes",
-			"function": "Addlink",
-		}).Error(err)
+		logger.Error(err)
 		return []entity.Note{}, err
 	}
 
