@@ -22,10 +22,12 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var newUser entity.UserRequest
 	if err := newUser.Bind(r); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	if err := h.userService.Save(newUser); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
@@ -47,10 +49,12 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	var updateUser entity.UserRequest
 	if err := updateUser.Bind(r); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	if err := h.userService.Update(curUser, updateUser); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -61,6 +65,7 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.userService.Delete(security.Hash(user.Email)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)

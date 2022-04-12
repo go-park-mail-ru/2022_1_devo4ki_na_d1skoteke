@@ -22,11 +22,11 @@ const queryFindNote = "SELECT name, body FROM note WHERE NoteID = $1"
 
 func (store *NotesStorage) Find(token string) (entity.Note, error) {
 	row := store.DB.QueryRow(queryFindNote, token)
-	note := &entity.Note{}
+	note := entity.Note{}
 	if err := row.Scan(&note.Name, &note.Body); err != nil {
 		return entity.Note{}, err
 	}
-	return *note, nil
+	return note, nil
 }
 
 const querySaveNote = "INSERT INTO note(noteID, name, body) VALUES ($1, $2, $3)"

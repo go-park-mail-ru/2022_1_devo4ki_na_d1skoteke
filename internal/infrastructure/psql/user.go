@@ -26,11 +26,11 @@ const queryGetUser = "SELECT userid, username, email, password from cotionuser w
 
 func (store *UserStorage) Get(userID string) (entity.User, error) {
 	row := store.DB.QueryRow(queryGetUser, userID)
-	user := &entity.User{}
+	user := entity.User{}
 	if err := row.Scan(&user.UserID, &user.Username, &user.Email, &user.Password); err != nil {
 		return entity.User{}, err
 	}
-	return *user, nil
+	return user, nil
 }
 
 const queryUpdateUser = "UPDATE cotionuser SET username = $1, password = $2 where userid = $3"
