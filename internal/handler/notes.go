@@ -56,7 +56,7 @@ func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
 
 	user := r.Context().Value("user").(entity.User)
 
-	notes, err := h.notesService.AllNotesByUserID(string(security.Hash(user.Email)))
+	notes, err := h.notesService.AllNotesByUserID(security.Hash(user.Email))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -77,7 +77,7 @@ func (h *NotesHandler) CreateNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := string(h.secureService.Hash(user.Email))
+	userID := h.secureService.Hash(user.Email)
 	if err := h.notesService.SaveNote(userID, noteRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

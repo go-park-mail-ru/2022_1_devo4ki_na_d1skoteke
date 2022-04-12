@@ -8,7 +8,6 @@ import (
 type NotesAppManager interface {
 	FindByToken(token string) (entity.Note, error)
 	AllNotesByUserID(userID string) ([]entity.Note, error)
-	TokensByUserID(hashedEmail string) ([]string, error)
 	SaveNote(userID string, noteRequest entity.NoteRequest) error
 	GetNote(userID string, noteToken string) (entity.Note, error)
 	UpdateNote(userID string, noteToken string, noteRequest entity.NoteRequest) error
@@ -16,8 +15,10 @@ type NotesAppManager interface {
 }
 
 type UserAppManager interface {
-	SaveUser(registerUser entity.RegisterUserRequest) (entity.User, error)
-	GetUser(email string) (entity.User, error)
+	Save(registerUser entity.UserRequest) error
+	Get(userID string) (entity.User, error)
+	Update(curUser entity.User, user entity.UserRequest) error
+	Delete(userID string) error
 }
 
 type AuthAppManager interface {

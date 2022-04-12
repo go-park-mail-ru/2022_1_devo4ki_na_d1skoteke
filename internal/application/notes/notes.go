@@ -38,14 +38,6 @@ func (n *NotesApp) AllNotesByUserID(userID string) ([]entity.Note, error) {
 	return notes, err
 }
 
-func (n *NotesApp) TokensByUserID(hashedEmail string) ([]string, error) {
-	tokens, err := n.usersNotesRepository.TokensByUserID(hashedEmail)
-	if errors.Is(err, storage.ErrFindNotesForUser) {
-		return []string{}, nil
-	}
-	return tokens, err
-}
-
 func (n *NotesApp) SaveNote(userID string, noteRequest entity.NoteRequest) error {
 	newToken := generator.RandToken()
 

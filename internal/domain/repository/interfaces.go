@@ -9,8 +9,10 @@ type SessionRepository interface {
 }
 
 type UserRepository interface {
-	SaveUser(user entity.User) (entity.User, error)
-	GetUser(email string) (entity.User, error)
+	Save(user entity.User) error
+	Get(userID string) (entity.User, error)
+	Update(user entity.User) error
+	Delete(userID string) error
 }
 
 type UsersNotesRepository interface {
@@ -18,7 +20,6 @@ type UsersNotesRepository interface {
 	DeleteLink(userID string, noteToken string) error
 	CheckLink(userID string, noteToken string) bool
 	AllNotesByUserID(hashedEmail string) ([]entity.Note, error)
-	TokensByUserID(hashedEmail string) ([]string, error)
 }
 
 type NotesRepository interface {

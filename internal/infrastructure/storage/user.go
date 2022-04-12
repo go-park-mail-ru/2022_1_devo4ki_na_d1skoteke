@@ -7,6 +7,9 @@ import (
 	"sync"
 )
 
+var ErrNoUserInDB = errors.New("no user in database with this userID")
+var ErrUserAlreadyRegistered = errors.New("user with this userID already has in database")
+
 type UserCacheStorage struct {
 	data            sync.Map
 	securityManager security.Manager
@@ -35,16 +38,31 @@ func NewUserCacheStorage(manager security.Manager) *UserCacheStorage {
 	return store
 }
 
-func (r *UserCacheStorage) SaveUser(user entity.User) (entity.User, error) {
-	r.data.LoadOrStore(string(r.securityManager.Hash(user.Email)), &user)
-	return user, nil
+func (r *UserCacheStorage) Save(user entity.User) error {
+	_, loaded := r.data.LoadOrStore(user.UserID, &user)
+	if loaded {
+		return ErrUserAlreadyRegistered
+	}
+	return nil
 }
 
-func (r *UserCacheStorage) GetUser(email string) (entity.User, error) {
-	rawUser, ok := r.data.Load(string(r.securityManager.Hash(email)))
-	if ok {
-		user := rawUser.(*entity.User)
-		return *user, nil
+func (r *UserCacheStorage) Get(userID string) (entity.User, error) {
+	rawUser, ok := r.data.Load(userID)
+	if !ok {
+		return entity.User{}, ErrNoUserInDB
 	}
-	return entity.User{}, errors.New("no user")
+	user := rawUser.(*entity.User)
+	return *user, nil
+}
+
+func (r *UserCacheStorage) Update(user entity.User) error {
+	r.data.Store(user.UserID, &user)
+	return nil
+}
+
+func (r *UserCacheStorage) Delete(userID string) error {
+	if _, loaded := r.data.LoadAndDelete(userID); !loaded {
+		return ErrNoUserInDB
+	}
+	return nil
 }
