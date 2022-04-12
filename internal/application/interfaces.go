@@ -6,7 +6,7 @@ import (
 )
 
 type NotesAppManager interface {
-	FindByToken(token string) (entity.Note, error)
+	//FindByToken(token string) (entity.Note, error)
 	AllNotesByUserID(userID string) ([]entity.Note, error)
 	SaveNote(userID string, noteRequest entity.NoteRequest) error
 	GetNote(userID string, noteToken string) (entity.Note, error)

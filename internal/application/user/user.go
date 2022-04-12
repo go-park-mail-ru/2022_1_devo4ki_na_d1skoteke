@@ -7,6 +7,8 @@ import (
 	"errors"
 )
 
+const packageName = "app user"
+
 type UserService struct {
 	userRepository  repository.UserRepository
 	securityManager security.Manager

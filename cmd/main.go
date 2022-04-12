@@ -9,13 +9,17 @@ import (
 	"cotion/internal/infrastructure/psql"
 	"cotion/internal/infrastructure/storage"
 	"cotion/internal/pkg/security"
-	"fmt"
 	"github.com/gorilla/mux"
-	"log"
-	"net/http"
-
 	_ "github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
+	"net/http"
+	"os"
 )
+
+func init() {
+	log.SetOutput(os.Stdout)
+	log.SetLevel(log.InfoLevel)
+}
 
 func main() {
 	router := mux.NewRouter()
@@ -25,7 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	fmt.Println("Successful connect to database.")
+	log.Info("Successful connect to database.")
 
 	securityManager := security.NewSimpleSecurityManager()
 
@@ -62,7 +66,7 @@ func main() {
 
 	router.Use(middleware.CorsMiddleware())
 
-	fmt.Println("Start server at port 3001...")
+	log.Info("Start server at port 3001...")
 	if err := http.ListenAndServe(":3001", router); err != nil {
 		log.Fatal(err)
 	}
