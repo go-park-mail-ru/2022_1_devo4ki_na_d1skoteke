@@ -20,7 +20,6 @@ type UsersNotesRepository interface {
 	DeleteLink(userID string, noteToken string) error
 	CheckLink(userID string, noteToken string) bool
 	AllNotesByUserID(hashedEmail string) ([]entity.Note, error)
-	TokensByUserID(hashedEmail string) ([]string, error)
 }
 
 type NotesRepository interface {

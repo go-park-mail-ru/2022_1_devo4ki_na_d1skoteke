@@ -24,13 +24,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 	fmt.Println("Successful connect to database.")
 
 	securityManager := security.NewSimpleSecurityManager()
 
 	userStorage := psql.NewUserStorage(db)
 	notesStorage := psql.NewNotesStorage(db)
-	usersNotesStorage := storage.NewUsersNotesStorage(notesStorage)
+	usersNotesStorage := psql.NewUsersNotesStorage(db)
 	sessionStorage := storage.NewSessionStorage()
 
 	notesService := notes.NewNotesApp(notesStorage, usersNotesStorage)

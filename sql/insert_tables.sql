@@ -6,5 +6,6 @@ INSERT INTO Note(NoteID, Name, Body)
 VALUES ('1', '1st psql note', 'Body of 1st psql note.'),
        ('3', '3st psql note', 'Body of 3st psql note.');
 
--- INSERT INTO UsersNotes(UserID, NoteID)
--- VALUES (1, 1);
+INSERT INTO UsersNotes(UserID, NoteID)
+VALUES ('c04532ca4e12438bcd37d2ae1676d3f5a27241062095eaccdbf0102b78d2a948', '1'),
+       ('c04532ca4e12438bcd37d2ae1676d3f5a27241062095eaccdbf0102b78d2a948', '3');

@@ -8,7 +8,6 @@ import (
 type NotesAppManager interface {
 	FindByToken(token string) (entity.Note, error)
 	AllNotesByUserID(userID string) ([]entity.Note, error)
-	TokensByUserID(hashedEmail string) ([]string, error)
 	SaveNote(userID string, noteRequest entity.NoteRequest) error
 	GetNote(userID string, noteToken string) (entity.Note, error)
 	UpdateNote(userID string, noteToken string, noteRequest entity.NoteRequest) error

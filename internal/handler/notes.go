@@ -56,7 +56,7 @@ func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
 
 	user := r.Context().Value("user").(entity.User)
 
-	notes, err := h.notesService.AllNotesByUserID(string(security.Hash(user.Email)))
+	notes, err := h.notesService.AllNotesByUserID(security.Hash(user.Email))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
