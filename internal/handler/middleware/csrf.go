@@ -8,20 +8,20 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
 )
 
 const (
-	tokenName = "csrf-token"
+	tokenName       = "csrf-token"
+	base            = 10
+	bitSize         = 64
+	ENV_CSRF_SECRET = "csrf_secret"
 )
 
-var secret = "kjkjadjfeqir0w9qrfnkd"
-
-type csrfToken struct {
-	value string `json:"csrf-token"`
-}
+var secret = os.Getenv(ENV_CSRF_SECRET)
 
 func CsrfMiddleware() mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
@@ -68,7 +68,7 @@ func createToken(userID string, tokenExpTime int64) (string, error) {
 	h := hmac.New(sha256.New, []byte(secret))
 	data := fmt.Sprintf("%s:%d", userID, tokenExpTime)
 	h.Write([]byte(data))
-	token := hex.EncodeToString(h.Sum(nil)) + ":" + strconv.FormatInt(tokenExpTime, 10)
+	token := hex.EncodeToString(h.Sum(nil)) + ":" + strconv.FormatInt(tokenExpTime, base)
 	return token, nil
 }
 
@@ -78,7 +78,7 @@ func checkToken(userID string, inputToken string) error {
 		return fmt.Errorf("bad token data")
 	}
 
-	tokenExp, err := strconv.ParseInt(tokenData[1], 10, 64)
+	tokenExp, err := strconv.ParseInt(tokenData[1], base, bitSize)
 	if err != nil {
 		return fmt.Errorf("bad token time")
 	}
