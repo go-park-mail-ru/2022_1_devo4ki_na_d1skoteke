@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	ENV_PG_HOST     = "host"
-	ENV_PG_PORT     = "port"
-	ENV_PG_DBNAME   = "dbname"
-	ENV_PG_USER     = "user"
-	ENV_PG_PASSWORD = "pass"
+	ENV_PG_HOST     = "pg_host"
+	ENV_PG_PORT     = "pg_port"
+	ENV_PG_DBNAME   = "pg_dbname"
+	ENV_PG_USER     = "pg_user"
+	ENV_PG_PASSWORD = "pg_pass"
 )
 
 var ErrNoHost = errors.New("There isn't host in *.env file")

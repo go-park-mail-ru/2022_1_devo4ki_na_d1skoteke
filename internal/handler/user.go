@@ -6,6 +6,7 @@ import (
 	"cotion/internal/pkg/security"
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
+	"io"
 	"net/http"
 )
 
@@ -94,4 +95,50 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
+	logger := log.WithFields(log.Fields{
+		"package":  packageName,
+		"function": "UploadAvatar",
+	})
+	user := r.Context().Value("user").(entity.User)
+
+	src, hdr, err := r.FormFile("avatar")
+	if err != nil {
+		http.Error(w, "Wrong request!", http.StatusBadRequest)
+		logger.Warning(err)
+		return
+	}
+
+	if err := h.userService.UploadAvatar(src, hdr, user); err != nil {
+		http.Error(w, "Error!", http.StatusInternalServerError)
+		logger.Error(err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *UserHandler) DownloadAvatar(w http.ResponseWriter, r *http.Request) {
+	logger := log.WithFields(log.Fields{
+		"package":  packageName,
+		"function": "DownloadAvatar",
+	})
+	user := r.Context().Value("user").(entity.User)
+
+	img, err := h.userService.DownloadAvatar(user)
+	defer img.Close()
+	if err != nil {
+		http.Error(w, "Error!", http.StatusBadRequest)
+		logger.Debug(err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "image/jpeg")
+	if _, err := io.Copy(w, img); err != nil {
+		http.Error(w, "Can`t download photo!", http.StatusInternalServerError)
+		logger.Error(err)
+		return
+	}
 }

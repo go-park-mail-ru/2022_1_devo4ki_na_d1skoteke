@@ -7,6 +7,7 @@ import (
 	"cotion/internal/handler"
 	"cotion/internal/handler/middleware"
 	"cotion/internal/infrastructure/psql"
+	"cotion/internal/infrastructure/s3"
 	"cotion/internal/infrastructure/storage"
 	"cotion/internal/pkg/security"
 	"github.com/gorilla/mux"
@@ -17,13 +18,12 @@ import (
 )
 
 func init() {
+	//godotenv.Load(".env")
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.InfoLevel)
 }
 
 func main() {
-	router := mux.NewRouter()
-
 	db, err := psql.Connect()
 	if err != nil {
 		log.Fatal(err)
@@ -31,6 +31,13 @@ func main() {
 	defer db.Close()
 	log.Info("Successful connect to database.")
 
+	imageStorage, err := s3.NewMinioProvider()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Info("Successful connect to minio.")
+
+	router := mux.NewRouter()
 	securityManager := security.NewSimpleSecurityManager()
 
 	userStorage := psql.NewUserStorage(db)
@@ -39,7 +46,7 @@ func main() {
 	sessionStorage := storage.NewSessionStorage()
 
 	notesService := notes.NewNotesApp(notesStorage, usersNotesStorage)
-	userService := user.NewUserService(userStorage, securityManager)
+	userService := user.NewUserService(userStorage, imageStorage, securityManager)
 	authService := auth.NewAuthApp(sessionStorage, userService, securityManager)
 
 	notesHandler := handler.NewNotesHandler(notesService, authService, securityManager)
@@ -63,6 +70,9 @@ func main() {
 	routerAPI.HandleFunc("/users/login", amw.NotAuth(loginHandler.Login)).Methods("POST")
 	routerAPI.HandleFunc("/users/logout", amw.Auth(loginHandler.Logout)).Methods("GET")
 	routerAPI.HandleFunc("/users/auth", loginHandler.Auth).Methods("GET")
+
+	routerAPI.HandleFunc("/user/avatar", amw.Auth(userHandler.UploadAvatar)).Methods("POST")
+	routerAPI.HandleFunc("/user/avatar", amw.Auth(userHandler.DownloadAvatar)).Methods("GET")
 
 	router.Use(middleware.CorsMiddleware())
 

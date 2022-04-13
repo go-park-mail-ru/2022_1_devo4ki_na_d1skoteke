@@ -1,6 +1,9 @@
 package repository
 
-import "cotion/internal/domain/entity"
+import (
+	"cotion/internal/domain/entity"
+	"github.com/minio/minio-go/v7"
+)
 
 type SessionRepository interface {
 	HasSession(SID string) (entity.Session, bool)
@@ -27,4 +30,9 @@ type NotesRepository interface {
 	Update(token string, note entity.Note) error
 	Delete(token string) error
 	Find(token string) (entity.Note, error)
+}
+
+type ImageRepository interface {
+	UploadFile(image entity.ImageUnit) (string, error)
+	DownloadFile(imageID string) (*minio.Object, error)
 }
