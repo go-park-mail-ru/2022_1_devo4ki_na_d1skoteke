@@ -5,7 +5,6 @@ go 1.17
 require (
 	github.com/dlclark/regexp2 v1.4.0
 	github.com/gorilla/mux v1.8.0
-	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.10.5
 	github.com/minio/minio-go/v7 v7.0.23
 	github.com/sirupsen/logrus v1.8.1

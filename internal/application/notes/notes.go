@@ -49,6 +49,7 @@ func (n *NotesApp) SaveNote(userID string, noteRequest entity.NoteRequest) error
 		logger.Error(err)
 		return err
 	}
+
 	return nil
 }
 

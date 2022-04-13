@@ -34,7 +34,7 @@ func (store *NotesStorage) Find(token string) (entity.Note, error) {
 
 func (store *NotesStorage) Save(token string, note entity.Note) error {
 	_, ok := store.data.LoadOrStore(token, note)
-	if !ok {
+	if ok {
 		return errors.New("there is note in DB with this token")
 	}
 	return nil
