@@ -16,10 +16,10 @@ func NewUserStorage(db *sql.DB) *UserStorage {
 	}
 }
 
-const querySaveUser = "INSERT INTO cotionuser(userid, username, email, password) VALUES ($1, $2, $3, $4)"
+const querySaveUser = "INSERT INTO cotionuser(userid, username, email, password, avatar) VALUES ($1, $2, $3, $4, $5)"
 
 func (store *UserStorage) Save(user entity.User) error {
-	if _, err := store.DB.Exec(querySaveUser, user.UserID, user.Username, user.Email, user.Password); err != nil {
+	if _, err := store.DB.Exec(querySaveUser, user.UserID, user.Username, user.Email, user.Password, user.Avatar); err != nil {
 		log.WithFields(log.Fields{
 			"package":  packageName,
 			"function": "Save",
@@ -29,21 +29,21 @@ func (store *UserStorage) Save(user entity.User) error {
 	return nil
 }
 
-const queryGetUser = "SELECT userid, username, email, password from cotionuser where userid = $1"
+const queryGetUser = "SELECT userid, username, email, password, avatar from cotionuser where userid = $1"
 
 func (store *UserStorage) Get(userID string) (entity.User, error) {
 	row := store.DB.QueryRow(queryGetUser, userID)
 	user := entity.User{}
-	if err := row.Scan(&user.UserID, &user.Username, &user.Email, &user.Password); err != nil {
+	if err := row.Scan(&user.UserID, &user.Username, &user.Email, &user.Password, &user.Avatar); err != nil {
 		return entity.User{}, err
 	}
 	return user, nil
 }
 
-const queryUpdateUser = "UPDATE cotionuser SET username = $1, password = $2 where userid = $3"
+const queryUpdateUser = "UPDATE cotionuser SET username = $1, password = $2, avatar = $3 where userid = $4"
 
 func (store *UserStorage) Update(user entity.User) error {
-	if _, err := store.DB.Exec(queryUpdateUser, user.Username, user.Password, user.UserID); err != nil {
+	if _, err := store.DB.Exec(queryUpdateUser, user.Username, user.Password, user.Avatar, user.UserID); err != nil {
 		log.WithFields(log.Fields{
 			"package":  packageName,
 			"function": "Update",

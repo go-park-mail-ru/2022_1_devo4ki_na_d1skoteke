@@ -2,6 +2,8 @@ package application
 
 import (
 	"cotion/internal/domain/entity"
+	"github.com/minio/minio-go/v7"
+	"mime/multipart"
 	"net/http"
 )
 
@@ -19,6 +21,8 @@ type UserAppManager interface {
 	Get(userID string) (entity.User, error)
 	Update(curUser entity.User, user entity.UserRequest) error
 	Delete(userID string) error
+	UploadAvatar(src multipart.File, hdr *multipart.FileHeader, user entity.User) error
+	DownloadAvatar(user entity.User) (*minio.Object, error)
 }
 
 type AuthAppManager interface {

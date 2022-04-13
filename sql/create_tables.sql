@@ -3,7 +3,8 @@ CREATE TABLE CotionUser
   UserID    varchar(64)      NOT NULL PRIMARY KEY,
   Username  varchar(20)      NOT NULL,
   Email     varchar(20)      NOT NULL,
-  Password  varchar(256)     NOT NULL
+  Password  varchar(256)     NOT NULL,
+  Avatar    varchar(20)      NOT NULL
 );
 
 CREATE TABLE Note
