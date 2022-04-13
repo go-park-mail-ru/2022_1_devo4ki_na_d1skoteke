@@ -18,9 +18,10 @@ import (
 )
 
 func init() {
-	//godotenv.Load(".env")
+	//godotenv.Load(".env_test")
 	log.SetOutput(os.Stdout)
-	log.SetLevel(log.InfoLevel)
+	log.SetLevel(log.TraceLevel)
+	log.SetFormatter(&log.TextFormatter{})
 }
 
 func main() {
@@ -56,6 +57,7 @@ func main() {
 	amw := middleware.NewAuthMiddleware(authService)
 
 	routerAPI := router.PathPrefix("/api/v1").Subrouter()
+
 	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", amw.Auth(notesHandler.ReceiveSingleNote)).Methods("GET")
 	routerAPI.HandleFunc("/note/{note-token:[0-9]+}", amw.Auth(notesHandler.UpdateNote)).Methods("PUT") //update note data
 	routerAPI.HandleFunc("/notes", amw.Auth(notesHandler.MainPage)).Methods("GET")
@@ -75,6 +77,7 @@ func main() {
 	routerAPI.HandleFunc("/user/avatar", amw.Auth(userHandler.DownloadAvatar)).Methods("GET")
 
 	router.Use(middleware.CorsMiddleware())
+	router.Use(middleware.CsrfMiddleware())
 
 	log.Info("Start server at port 3001...")
 	if err := http.ListenAndServe(":3001", router); err != nil {
