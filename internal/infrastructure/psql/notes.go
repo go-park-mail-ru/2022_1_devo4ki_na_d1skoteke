@@ -32,7 +32,7 @@ func (store *NotesStorage) Find(token string) (entity.Note, error) {
 			"function":  "Find",
 			"noteToken": token,
 		}).Warning(err)
-		return entity.Note{}, err
+		return entity.Note{}, ErrNoNoteInDB
 	}
 	return note, nil
 }
