@@ -5,12 +5,12 @@ go 1.17
 require (
 	github.com/dlclark/regexp2 v1.4.0
 	github.com/gorilla/mux v1.8.0
-	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.10.5
 	github.com/minio/minio-go/v7 v7.0.23
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd
+	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0
 )
 
 require (
