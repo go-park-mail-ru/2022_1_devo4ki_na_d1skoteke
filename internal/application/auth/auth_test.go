@@ -3,6 +3,7 @@ package auth
 import (
 	"cotion/internal/application/user"
 	"cotion/internal/domain/entity"
+	"cotion/internal/domain/repository"
 	"cotion/internal/infrastructure/storage"
 	"cotion/internal/pkg/security"
 	"errors"
@@ -35,7 +36,7 @@ func TestLogin(t *testing.T) {
 			inParam1: "test0@mail.ru",
 			inParam2: "Test1234!@#",
 			expected: func(actualCookie *http.Cookie, actualErr error) {
-				require.Equal(t, errors.New("no user"), actualErr)
+				require.Equal(t, storage.ErrNoUserInDB, actualErr)
 				require.Equal(t, &http.Cookie{}, actualCookie)
 			},
 		},
@@ -52,8 +53,9 @@ func TestLogin(t *testing.T) {
 	securityManager := security.NewSimpleSecurityManager()
 	sessionStorage := storage.NewSessionStorage()
 	userStorage := storage.NewUserCacheStorage(securityManager)
+	var imageStorage repository.ImageRepository
 
-	userService := user.NewUserService(userStorage, securityManager)
+	userService := user.NewUserService(userStorage, imageStorage, securityManager)
 	authService := NewAuthApp(sessionStorage, userService, securityManager)
 
 	for name, tc := range cases {
@@ -98,8 +100,9 @@ func TestLoginLogout(t *testing.T) {
 	securityManager := security.NewSimpleSecurityManager()
 	sessionStorage := storage.NewSessionStorage()
 	userStorage := storage.NewUserCacheStorage(securityManager)
+	var imageStorage repository.ImageRepository
 
-	userService := user.NewUserService(userStorage, securityManager)
+	userService := user.NewUserService(userStorage, imageStorage, securityManager)
 	authService := NewAuthApp(sessionStorage, userService, securityManager)
 
 	for name, tc := range cases {
@@ -145,8 +148,9 @@ func TestAuth(t *testing.T) {
 	securityManager := security.NewSimpleSecurityManager()
 	sessionStorage := storage.NewSessionStorage()
 	userStorage := storage.NewUserCacheStorage(securityManager)
+	var imageStorage repository.ImageRepository
 
-	userService := user.NewUserService(userStorage, securityManager)
+	userService := user.NewUserService(userStorage, imageStorage, securityManager)
 	authService := NewAuthApp(sessionStorage, userService, securityManager)
 
 	for name, tc := range cases {
