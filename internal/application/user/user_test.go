@@ -9,10 +9,11 @@ import (
 )
 
 const (
-	username              = "username"
-	email                 = "email@mail.ru"
-	badEmail              = "emailru"
-	securePassword        = "6Va}4HG%/h+fHUYD"
+	username = "username"
+	email    = "email@mail.ru"
+	badEmail = "emailru"
+	//securePassword        = "6Va}4HG%/h+fHUYD"
+	securePassword        = "Test1234!@#"
 	anotherSecurePassword = "6Va}4HG%/h+fHUYD23sd4!@3213"
 	unsecurePassword      = "password"
 )
