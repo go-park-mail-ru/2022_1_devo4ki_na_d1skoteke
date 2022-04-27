@@ -9,15 +9,14 @@ import (
 	"testing"
 )
 
-var mockUser = entity.User{
-	UserID:   "101",
-	Username: "test",
-	Email:    "test@mail.ru",
-	Password: "Test1234!@#",
-	Avatar:   "none",
-}
-
 func TestSaveUser(t *testing.T) {
+	var mockUser = entity.User{
+		UserID:   "101",
+		Username: "test",
+		Email:    "test@mail.ru",
+		Password: "Test1234!@#",
+		Avatar:   "none",
+	}
 	cases := map[string]struct {
 		prepare  func(sqlmock.Sqlmock)
 		expected func(error)
@@ -62,6 +61,13 @@ func TestSaveUser(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
+	var mockUser = entity.User{
+		UserID:   "101",
+		Username: "test",
+		Email:    "test@mail.ru",
+		Password: "Test1234!@#",
+		Avatar:   "none",
+	}
 	cases := map[string]struct {
 		prepare  func(sqlmock.Sqlmock)
 		expected func(entity.User, error)
@@ -109,6 +115,13 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestUpdateUser(t *testing.T) {
+	var mockUser = entity.User{
+		UserID:   "101",
+		Username: "test",
+		Email:    "test@mail.ru",
+		Password: "Test1234!@#",
+		Avatar:   "none",
+	}
 	cases := map[string]struct {
 		prepare  func(sqlmock.Sqlmock)
 		expected func(error)
@@ -153,6 +166,13 @@ func TestUpdateUser(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
+	var mockUser = entity.User{
+		UserID:   "101",
+		Username: "test",
+		Email:    "test@mail.ru",
+		Password: "Test1234!@#",
+		Avatar:   "none",
+	}
 	cases := map[string]struct {
 		prepare  func(sqlmock.Sqlmock)
 		expected func(error)

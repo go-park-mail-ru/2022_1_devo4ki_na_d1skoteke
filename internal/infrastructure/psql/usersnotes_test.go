@@ -10,13 +10,15 @@ import (
 	"testing"
 )
 
-var mockNoteToken = "adjfkjanfkakdfjjk"
-var mockNote = entity.Note{
-	Name: "testNoteName",
-	Body: "testNoteBody",
-}
-
 func TestCheckLink(t *testing.T) {
+	var mockNoteToken = "adjfkjanfkakdfjjk"
+	var mockUser = entity.User{
+		UserID:   "101",
+		Username: "test",
+		Email:    "test@mail.ru",
+		Password: "Test1234!@#",
+		Avatar:   "none",
+	}
 	cases := map[string]struct {
 		prepare  func(sqlmock.Sqlmock)
 		expected func(bool)
@@ -63,6 +65,14 @@ func TestCheckLink(t *testing.T) {
 }
 
 func TestAddLink(t *testing.T) {
+	var mockNoteToken = "adjfkjanfkakdfjjk"
+	var mockUser = entity.User{
+		UserID:   "101",
+		Username: "test",
+		Email:    "test@mail.ru",
+		Password: "Test1234!@#",
+		Avatar:   "none",
+	}
 	cases := map[string]struct {
 		prepare  func(sqlmock.Sqlmock)
 		expected func(error)
@@ -107,6 +117,14 @@ func TestAddLink(t *testing.T) {
 }
 
 func TestDeleteLink(t *testing.T) {
+	var mockNoteToken = "adjfkjanfkakdfjjk"
+	var mockUser = entity.User{
+		UserID:   "101",
+		Username: "test",
+		Email:    "test@mail.ru",
+		Password: "Test1234!@#",
+		Avatar:   "none",
+	}
 	cases := map[string]struct {
 		prepare  func(sqlmock.Sqlmock)
 		expected func(error)
@@ -151,6 +169,17 @@ func TestDeleteLink(t *testing.T) {
 }
 
 func TestAllNotesByUserID(t *testing.T) {
+	var mockNote = entity.Note{
+		Name: "testNoteName",
+		Body: "testNoteBody",
+	}
+	var mockUser = entity.User{
+		UserID:   "101",
+		Username: "test",
+		Email:    "test@mail.ru",
+		Password: "Test1234!@#",
+		Avatar:   "none",
+	}
 	cases := map[string]struct {
 		prepare  func(sqlmock.Sqlmock)
 		expected func([]entity.Note, error)
