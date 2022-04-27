@@ -10,6 +10,7 @@ import (
 	"cotion/internal/infrastructure/s3"
 	"cotion/internal/infrastructure/storage"
 	"cotion/internal/pkg/security"
+	"cotion/internal/pkg/xss"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
@@ -55,6 +56,7 @@ func main() {
 	loginHandler := handler.NewLoginHandler(authService)
 
 	amw := middleware.NewAuthMiddleware(authService)
+	xss.NewXssSanitizer()
 
 	routerAPI := router.PathPrefix("/api/v1").Subrouter()
 
@@ -77,7 +79,7 @@ func main() {
 	routerAPI.HandleFunc("/user/avatar", amw.Auth(userHandler.DownloadAvatar)).Methods("GET")
 
 	router.Use(middleware.CorsMiddleware())
-	router.Use(middleware.CsrfMiddleware())
+	//router.Use(middleware.CsrfMiddleware())
 
 	log.Info("Start server at port 3001...")
 	if err := http.ListenAndServe(":3001", router); err != nil {
