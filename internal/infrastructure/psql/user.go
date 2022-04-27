@@ -29,7 +29,7 @@ func (store *UserStorage) Save(user entity.User) error {
 	return nil
 }
 
-const queryGetUser = "SELECT userid, username, email, password, avatar from cotionuser where userid = $1"
+const queryGetUser = "SELECT userid, username, email, password, avatar FROM cotionuser WHERE userid = $1"
 
 func (store *UserStorage) Get(userID string) (entity.User, error) {
 	row := store.DB.QueryRow(queryGetUser, userID)
