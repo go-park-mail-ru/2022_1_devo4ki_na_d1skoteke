@@ -4,6 +4,7 @@ import (
 	"cotion/internal/application"
 	"cotion/internal/domain/entity"
 	"cotion/internal/pkg/security"
+	"cotion/internal/pkg/xss"
 	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
@@ -52,6 +53,8 @@ func (h *NotesHandler) ReceiveSingleNote(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	xss.SanitizeNote(&note)
+
 	if err := json.NewEncoder(w).Encode(note); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		logger.Error(err)
@@ -75,6 +78,8 @@ func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
 		logger.Error(err)
 		return
 	}
+
+	xss.SanitizeNotes(&notes)
 
 	if err := json.NewEncoder(w).Encode(entity.Notes{Notes: notes}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
