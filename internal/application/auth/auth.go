@@ -1,11 +1,12 @@
 package auth
 
 import (
+	"context"
 	"cotion/internal/application"
 	"cotion/internal/domain/entity"
-	"cotion/internal/domain/repository"
 	"cotion/internal/pkg/generator"
 	"cotion/internal/pkg/security"
+	"cotion/microservices/session/grpc"
 	"errors"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -21,16 +22,17 @@ const (
 var ErrNoSession = errors.New("no session")
 
 type AuthApp struct {
-	userService       application.UserAppManager
-	securityManager   security.Manager
-	sessionRepository repository.SessionRepository
+	userService     application.UserAppManager
+	securityManager security.Manager
+	//sessionRepository repository.SessionRepository
+	grpcSessionManager grpcSession.AuthCheckerClient
 }
 
-func NewAuthApp(sessionRepo repository.SessionRepository, userServ application.UserAppManager, secureServ security.Manager) *AuthApp {
+func NewAuthApp(grpcManager grpcSession.AuthCheckerClient, userServ application.UserAppManager, secureServ security.Manager) *AuthApp {
 	return &AuthApp{
-		userService:       userServ,
-		securityManager:   secureServ,
-		sessionRepository: sessionRepo,
+		userService:        userServ,
+		securityManager:    secureServ,
+		grpcSessionManager: grpcManager,
 	}
 }
 
@@ -40,12 +42,17 @@ func (au *AuthApp) Login(email string, password string) (*http.Cookie, error) {
 		return &http.Cookie{}, err
 	}
 
-	if err = au.securityManager.ComparePasswords(user.Password, password); err != nil {
+	if err := au.securityManager.ComparePasswords(user.Password, password); err != nil {
 		return &http.Cookie{}, err
 	}
 
 	SID := generator.RandSID(32)
-	session, err := au.sessionRepository.NewSession(SID, user)
+	ctx := context.Background()
+	grpcMessage := &grpcSession.Session{
+		SessionID: SID,
+		UserID:    user.UserID,
+	}
+	_, err = au.grpcSessionManager.Create(ctx, grpcMessage)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"package":  packageName,
@@ -56,7 +63,7 @@ func (au *AuthApp) Login(email string, password string) (*http.Cookie, error) {
 
 	cookie := http.Cookie{
 		Name:    sessionCookie,
-		Value:   session.SID,
+		Value:   SID,
 		Expires: time.Now().Add(5 * time.Hour),
 		Path:    pathSessionCookie,
 	}
@@ -64,27 +71,41 @@ func (au *AuthApp) Login(email string, password string) (*http.Cookie, error) {
 }
 
 func (au *AuthApp) Logout(sessionCookie *http.Cookie) (*http.Cookie, error) {
-	if _, ok := au.sessionRepository.HasSession(sessionCookie.Value); !ok {
+	ctx := context.Background()
+	grpcMessage := &grpcSession.SessionID{
+		ID: sessionCookie.Value,
+	}
+	if _, err := au.grpcSessionManager.Delete(ctx, grpcMessage); err != nil {
 		log.WithFields(log.Fields{
 			"package":  packageName,
 			"function": "Logout",
-		}).Error(ErrNoSession)
-		return &http.Cookie{}, ErrNoSession
+		}).Error(err)
+		return &http.Cookie{}, err
 	}
 
-	au.sessionRepository.DeleteSession(sessionCookie.Value)
 	sessionCookie.Expires = time.Now().Add(-time.Hour * 5)
 	sessionCookie.Path = pathSessionCookie
 	return sessionCookie, nil
 }
 
 func (au *AuthApp) Auth(sessionCookie *http.Cookie) (entity.User, bool) {
-	session, ok := au.sessionRepository.HasSession(sessionCookie.Value)
-	if !ok {
+	ctx := context.Background()
+	grpcMessSend := &grpcSession.SessionID{
+		ID: sessionCookie.Value,
+	}
+	grpcMessReceive, err := au.grpcSessionManager.Check(ctx, grpcMessSend)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"package":  packageName,
+			"function": "Auth",
+		}).Error(err)
+		return entity.User{}, false
+	}
+	if grpcMessReceive == nil {
 		return entity.User{}, false
 	}
 
-	user, err := au.userService.Get(au.securityManager.Hash(session.UserEmail))
+	user, err := au.userService.Get(grpcMessReceive.UserID)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"package":  packageName,

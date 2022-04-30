@@ -1,5 +1,12 @@
 version: "3.7"
 services:
+  session:
+    build:
+      context: .
+      dockerfile: Dockerfile-session
+    ports:
+      - "5001:5001"
+    restart: unless-stopped
   backend:
     build:
       context: .
