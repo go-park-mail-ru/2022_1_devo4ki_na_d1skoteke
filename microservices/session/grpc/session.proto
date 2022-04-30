@@ -1,0 +1,22 @@
+syntax = "proto3";
+option go_package = "/microservice_session/session";
+package grpcSession;
+
+message SessionID {
+  string ID = 1;
+}
+
+message Session {
+  string sessionID = 1;
+  string userID = 2;
+}
+
+message Nothing {
+  bool status = 1;
+}
+
+service AuthChecker {
+  rpc Create (Session) returns (Nothing) {}
+  rpc Check (SessionID) returns (Session) {}
+  rpc Delete (SessionID) returns (Nothing) {}
+}
