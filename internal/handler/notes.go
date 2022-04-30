@@ -71,8 +71,7 @@ func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 
 	user := r.Context().Value("user").(entity.User)
-
-	notes, err := h.notesService.AllNotesByUserID(security.Hash(user.Email))
+	notes, err := h.notesService.AllNotesByUserID(user.UserID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		logger.Error(err)
@@ -81,10 +80,10 @@ func (h *NotesHandler) MainPage(w http.ResponseWriter, r *http.Request) {
 
 	xss.SanitizeNotes(&notes)
 
-	if err := json.NewEncoder(w).Encode(entity.Notes{Notes: notes}); err != nil {
+	if err := json.NewEncoder(w).Encode(notes); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		logger.WithFields(log.Fields{
-			"notes": entity.Notes{Notes: notes},
+			"notes": notes,
 		}).Error(err)
 		return
 	}

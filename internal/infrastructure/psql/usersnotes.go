@@ -59,9 +59,9 @@ func (store *UsersNotesStorage) CheckLink(userID string, noteToken string) bool 
 	return true
 }
 
-const queryFindNotes = "SELECT name, body FROM usersnotes JOIN note ON usersnotes.noteid = note.noteid WHERE userid = $1"
+const queryFindNotes = "SELECT name, note.noteid FROM usersnotes JOIN note ON usersnotes.noteid = note.noteid WHERE userid = $1"
 
-func (store *UsersNotesStorage) AllNotesByUserID(userID string) ([]entity.Note, error) {
+func (store *UsersNotesStorage) AllNotesByUserID(userID string) (entity.ShortNotes, error) {
 	logger := log.WithFields(log.Fields{
 		"package":  packageName,
 		"function": "AllNotesByUserID",
@@ -70,23 +70,23 @@ func (store *UsersNotesStorage) AllNotesByUserID(userID string) ([]entity.Note, 
 	rows, err := store.DB.Query(queryFindNotes, userID)
 	if err != nil {
 		logger.Error(err)
-		return []entity.Note{}, err
+		return entity.ShortNotes{}, err
 	}
 	defer rows.Close()
 
-	notes := make([]entity.Note, 0)
+	notes := entity.ShortNotes{}
 	for rows.Next() {
-		var note entity.Note
-		if err := rows.Scan(&note.Name, &note.Body); err != nil {
+		var note entity.ShortNote
+		if err := rows.Scan(&note.Name, &note.Token); err != nil {
 			logger.Error(err)
-			return []entity.Note{}, err
+			return entity.ShortNotes{}, err
 		}
-		notes = append(notes, note)
+		notes.ShortNote = append(notes.ShortNote, note)
 	}
 
 	if err := rows.Err(); err != nil {
 		logger.Error(err)
-		return []entity.Note{}, err
+		return entity.ShortNotes{}, err
 	}
 
 	return notes, nil
