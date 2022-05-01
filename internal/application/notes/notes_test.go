@@ -55,34 +55,34 @@ func TestFindByToken(t *testing.T) {
 func TestAllNotesByUserID(t *testing.T) {
 	cases := map[string]struct {
 		in       string
-		expected func([]entity.Note, error)
+		expected func(entity.ShortNotes, error)
 	}{
 		"User's notes in DB": {
 			in: string(security.Hash("test@mail.ru")),
-			expected: func(actualNote []entity.Note, actualErr error) {
+			expected: func(actualNote entity.ShortNotes, actualErr error) {
 				require.Equal(t, nil, actualErr)
-				require.Equal(t, []entity.Note{{
+				require.Equal(t, entity.ShortNotes{ShortNote: []entity.ShortNote{{
 					Name: "1st note",
 					Body: "Hello everybody. This is Body of the 1st note)",
 				}, {
 					Name: "3st note",
 					Body: "Hello everybody. This is Body of the 3st note)",
-				},
+				}},
 				}, actualNote)
 			},
 		},
 		"No one user's note in DB": {
 			in: security.Hash("test2@mail.ru"),
-			expected: func(actualNote []entity.Note, actualErr error) {
+			expected: func(actualNote entity.ShortNotes, actualErr error) {
 				require.Equal(t, storage.ErrFindNotesForUser, actualErr)
-				require.Equal(t, []entity.Note{}, actualNote)
+				require.Equal(t, entity.ShortNotes{}, actualNote)
 			},
 		},
 		"User has note token, but there isn't this note in DB": {
 			in: string(security.Hash("test3@mail.ru")),
-			expected: func(actualNote []entity.Note, actualErr error) {
+			expected: func(actualNote entity.ShortNotes, actualErr error) {
 				require.Equal(t, errors.New("cannot find note by token"), actualErr)
-				require.Equal(t, []entity.Note{}, actualNote)
+				require.Equal(t, entity.ShortNotes{}, actualNote)
 			},
 		},
 	}

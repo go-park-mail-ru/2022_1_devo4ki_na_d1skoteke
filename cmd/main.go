@@ -12,6 +12,7 @@ import (
 	"cotion/internal/pkg/security"
 	"cotion/internal/pkg/xss"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -19,7 +20,7 @@ import (
 )
 
 func init() {
-	//godotenv.Load(".env_test")
+	godotenv.Load(".env_test")
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.TraceLevel)
 	log.SetFormatter(&log.TextFormatter{})

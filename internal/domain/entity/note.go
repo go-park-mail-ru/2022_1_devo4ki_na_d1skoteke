@@ -24,9 +24,10 @@ type Notes struct {
 }
 
 type ShortNote struct {
-	Name    string `json:"name"`
-	Favicon string `json:"favicon"`
-	Token   string `json:"token"`
+	Name string `json:"name"`
+	//Favicon string `json:"favicon"`
+	Body  string `json:"body"`
+	Token string `json:"token"`
 }
 
 type ShortNotes struct {
