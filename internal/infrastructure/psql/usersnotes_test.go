@@ -169,9 +169,10 @@ func TestDeleteLink(t *testing.T) {
 }
 
 func TestAllNotesByUserID(t *testing.T) {
-	var mockNote = entity.Note{
-		Name: "testNoteName",
-		Body: "testNoteBody",
+	var mockNote = entity.ShortNote{
+		Name:  "testNoteName",
+		Body:  "testNoteBody",
+		Token: "2938284012",
 	}
 	var mockUser = entity.User{
 		UserID:   "101",
@@ -182,30 +183,30 @@ func TestAllNotesByUserID(t *testing.T) {
 	}
 	cases := map[string]struct {
 		prepare  func(sqlmock.Sqlmock)
-		expected func([]entity.Note, error)
+		expected func(entity.ShortNotes, error)
 	}{
 		"Success": {
 			prepare: func(mock sqlmock.Sqlmock) {
-				rows := sqlmock.NewRows([]string{"Name", "Body"})
-				rows = rows.AddRow(mockNote.Name, mockNote.Body)
+				rows := sqlmock.NewRows([]string{"Name", "Body", "NoteID"})
+				rows = rows.AddRow(mockNote.Name, mockNote.Body, mockNote.Token)
 				mock.
-					ExpectQuery("SELECT name, body FROM usersnotes").
+					ExpectQuery("SELECT name, body, note.noteid FROM usersnotes").
 					WithArgs(mockUser.UserID).
 					WillReturnRows(rows)
 			},
-			expected: func(actualResult []entity.Note, actualError error) {
+			expected: func(actualResult entity.ShortNotes, actualError error) {
 				require.Equal(t, nil, actualError)
-				require.Equal(t, actualResult, []entity.Note{mockNote})
+				require.Equal(t, actualResult, entity.ShortNotes{ShortNote: []entity.ShortNote{mockNote}})
 			},
 		},
 		"Error": {
 			prepare: func(mock sqlmock.Sqlmock) {
 				mock.
-					ExpectQuery("SELECT name, body FROM usersnotes JOIN note").
+					ExpectQuery("SELECT name, body, note.noteid FROM usersnotes").
 					WithArgs(mockUser.UserID).
 					WillReturnError(fmt.Errorf("internal error"))
 			},
-			expected: func(actualResult []entity.Note, actualError error) {
+			expected: func(actualResult entity.ShortNotes, actualError error) {
 				require.Equal(t, fmt.Errorf("internal error"), actualError)
 			},
 		},

@@ -59,7 +59,7 @@ func (store *UsersNotesStorage) CheckLink(userID string, noteToken string) bool 
 	return true
 }
 
-const queryFindNotes = "SELECT name, note.noteid FROM usersnotes JOIN note ON usersnotes.noteid = note.noteid WHERE userid = $1"
+const queryFindNotes = "SELECT name, body, note.noteid FROM usersnotes JOIN note ON usersnotes.noteid = note.noteid WHERE userid = $1"
 
 func (store *UsersNotesStorage) AllNotesByUserID(userID string) (entity.ShortNotes, error) {
 	logger := log.WithFields(log.Fields{
@@ -77,7 +77,7 @@ func (store *UsersNotesStorage) AllNotesByUserID(userID string) (entity.ShortNot
 	notes := entity.ShortNotes{}
 	for rows.Next() {
 		var note entity.ShortNote
-		if err := rows.Scan(&note.Name, &note.Token); err != nil {
+		if err := rows.Scan(&note.Name, &note.Body, &note.Token); err != nil {
 			logger.Error(err)
 			return entity.ShortNotes{}, err
 		}

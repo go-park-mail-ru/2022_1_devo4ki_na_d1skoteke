@@ -26,6 +26,7 @@ func SanitizeNotes(data *entity.ShortNotes) {
 	}
 	for i := 0; i < len((*data).ShortNote); i++ {
 		(*data).ShortNote[i].Name = sanitizer.Sanitize((*data).ShortNote[i].Name)
+		(*data).ShortNote[i].Body = sanitizer.Sanitize((*data).ShortNote[i].Body)
 		(*data).ShortNote[i].Token = sanitizer.Sanitize((*data).ShortNote[i].Token)
 	}
 }

@@ -29,21 +29,25 @@ func NewUsersNotesStorage(notesStorage repository.NotesRepository) *UsersNotesSt
 	return storage
 }
 
-func (storage *UsersNotesStorage) AllNotesByUserID(hashedEmail string) ([]entity.Note, error) {
+func (storage *UsersNotesStorage) AllNotesByUserID(hashedEmail string) (entity.ShortNotes, error) {
 	rawNotesIDs, ok := storage.data.Load(hashedEmail)
 	if !ok {
-		return []entity.Note{}, ErrFindNotesForUser
+		return entity.ShortNotes{}, ErrFindNotesForUser
 	}
 
 	notesIDs := rawNotesIDs.([]string)
-	notes := make([]entity.Note, 0)
+	notes := entity.ShortNotes{}
 
 	for _, id := range notesIDs {
 		note, err := storage.notes.Find(id)
 		if err != nil {
-			return []entity.Note{}, ErrFindNoteByToken
+			return entity.ShortNotes{}, ErrFindNoteByToken
 		}
-		notes = append(notes, note)
+		shortNote := entity.ShortNote{
+			Name: note.Name,
+			Body: note.Body,
+		}
+		notes.ShortNote = append(notes.ShortNote, shortNote)
 	}
 
 	return notes, nil
