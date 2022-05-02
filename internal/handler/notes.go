@@ -17,15 +17,15 @@ const noteToken = "note-token"
 var NoTokenError = errors.New("No token in request.")
 
 type NotesHandler struct {
-	notesService  application.NotesAppManager
-	authService   application.AuthAppManager
+	notesService application.NotesAppManager
+	//authService   application.AuthAppManager
 	secureService security.Manager
 }
 
 func NewNotesHandler(notesServ application.NotesAppManager, authServ application.AuthAppManager, secureServ security.Manager) *NotesHandler {
 	return &NotesHandler{
-		notesService:  notesServ,
-		authService:   authServ,
+		notesService: notesServ,
+		//authService:   authServ,
 		secureService: secureServ,
 	}
 }

@@ -7,6 +7,8 @@ import (
 	"net/http"
 )
 
+//go:generate mockgen -source=interfaces.go -destination=mocks/mock.go
+
 type NotesAppManager interface {
 	//FindByToken(token string) (entity.Note, error)
 	AllNotesByUserID(userID string) (entity.ShortNotes, error)

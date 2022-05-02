@@ -72,7 +72,7 @@ func (h *LoginHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 	newSessionCookie, err := h.authService.Logout(sessionCookie)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusUnauthorized)
 		logger.Error(err)
 		return
 	}
