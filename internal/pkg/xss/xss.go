@@ -20,13 +20,14 @@ func Sanitize(rawText string) string {
 	return sanitizer.Sanitize(rawText)
 }
 
-func SanitizeNotes(data *[]entity.Note) {
+func SanitizeNotes(data *entity.ShortNotes) {
 	if sanitizer == nil {
 		return
 	}
-	for i := 0; i < len(*data); i++ {
-		(*data)[i].Name = sanitizer.Sanitize((*data)[i].Name)
-		(*data)[i].Body = sanitizer.Sanitize((*data)[i].Body)
+	for i := 0; i < len((*data).ShortNote); i++ {
+		(*data).ShortNote[i].Name = sanitizer.Sanitize((*data).ShortNote[i].Name)
+		(*data).ShortNote[i].Body = sanitizer.Sanitize((*data).ShortNote[i].Body)
+		(*data).ShortNote[i].Token = sanitizer.Sanitize((*data).ShortNote[i].Token)
 	}
 }
 

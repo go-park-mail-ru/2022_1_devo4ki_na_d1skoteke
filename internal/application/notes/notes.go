@@ -24,7 +24,7 @@ func NewNotesApp(notesRepo repository.NotesRepository, usersNotesRepository repo
 	}
 }
 
-func (n *NotesApp) AllNotesByUserID(userID string) ([]entity.Note, error) {
+func (n *NotesApp) AllNotesByUserID(userID string) (entity.ShortNotes, error) {
 	return n.usersNotesRepository.AllNotesByUserID(userID)
 }
 

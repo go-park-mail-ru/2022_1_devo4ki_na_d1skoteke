@@ -22,7 +22,7 @@ type UsersNotesRepository interface {
 	AddLink(userID string, noteToken string) error
 	DeleteLink(userID string, noteToken string) error
 	CheckLink(userID string, noteToken string) bool
-	AllNotesByUserID(hashedEmail string) ([]entity.Note, error)
+	AllNotesByUserID(hashedEmail string) (entity.ShortNotes, error)
 }
 
 type NotesRepository interface {

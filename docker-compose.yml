@@ -1,14 +1,14 @@
 version: "3.7"
 services:
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file:
-      - .env
-    ports:
-      - "3001:3001"
-    restart: unless-stopped
+#  backend:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    env_file:
+#      - .env
+#    ports:
+#      - "3001:3001"
+#    restart: unless-stopped
   postgres:
     image: postgres:latest
     environment:
