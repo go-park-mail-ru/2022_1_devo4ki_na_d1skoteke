@@ -1,8 +1,8 @@
-package session
+package mssession
 
 import (
 	"context"
-	pb "cotion/microservices/session/grpc"
+	pb "cotion/internal/infrastructure/grpc"
 	"errors"
 	log "github.com/sirupsen/logrus"
 	"sync"

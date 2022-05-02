@@ -1,8 +1,8 @@
 package main
 
 import (
-	mssession "cotion/microservices/session"
-	pb "cotion/microservices/session/grpc"
+	pb "cotion/internal/infrastructure/grpc"
+	"cotion/internal/infrastructure/mssession"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"net"

@@ -1,23 +1,23 @@
 #build stage
 FROM golang:1.17-buster AS builder
-WORKDIR /app
+WORKDIR /session
 ADD . .
 ENV CGO_ENABLED=0
 COPY go.mod .
 COPY go.sum .
 RUN go mod download
-RUN go build ./microservices/session/cmd/main.go
+RUN go build ./cmd/grpcSession.go
 
 #run stage
 FROM alpine:latest
 RUN apk upgrade --update-cache --available && \
     rm -rf /var/cache/apk/*
 
-WORKDIR /app
+WORKDIR /session
 
-COPY --from=builder /app/ .
-ADD microservices/session/cmd .
+COPY --from=builder /session/ .
+ADD cmd .
 
 EXPOSE 5001
 
-CMD ["./main"]
+CMD ["./grpcSession"]

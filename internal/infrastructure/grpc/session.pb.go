@@ -4,7 +4,7 @@
 // 	protoc        v3.6.1
 // source: microservice_session/session/session.proto
 
-package grpcSession
+package grpc
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
