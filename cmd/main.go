@@ -1,17 +1,18 @@
 package main
 
 import (
-	"cotion/internal/application/auth"
-	"cotion/internal/application/notes"
-	"cotion/internal/application/user"
-	"cotion/internal/handler"
-	"cotion/internal/handler/middleware"
-	grpcSession "cotion/internal/infrastructure/grpc"
-	"cotion/internal/infrastructure/psql"
-	"cotion/internal/infrastructure/s3"
+	"cotion/internal/api/application/auth"
+	"cotion/internal/api/application/user"
+	"cotion/internal/api/handler"
+	"cotion/internal/api/handler/middleware"
+	"cotion/internal/api/infrastructure/psql"
+	"cotion/internal/api/infrastructure/s3"
+	grpcNote "cotion/internal/note/infra/grpc"
 	"cotion/internal/pkg/security"
 	"cotion/internal/pkg/xss"
+	grpcSession "cotion/internal/session/infra/grpc"
 	"github.com/gorilla/mux"
+	//"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -22,6 +23,7 @@ import (
 
 const (
 	GRPC_SESSION_URL = "grpcsession"
+	GRPC_NOTE_URL    = "grpcnote"
 )
 
 func init() {
@@ -58,21 +60,31 @@ func main() {
 	}
 	defer grpcSessionConn.Close()
 	log.Info("Successful connect to microservice Session.")
-	grpcSessManager := grpcSession.NewAuthCheckerClient(grpcSessionConn)
 
+	//Microservice note connect
+	grpcNoteConn, err := grpc.Dial(
+		os.Getenv(GRPC_NOTE_URL),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Error(err)
+		log.Fatalf("can't connect to grpc")
+	}
+	defer grpcSessionConn.Close()
+	log.Info("Successful connect to microservice Note")
+
+	//server setup
 	router := mux.NewRouter()
 	securityManager := security.NewSimpleSecurityManager()
 
 	userStorage := psql.NewUserStorage(db)
-	notesStorage := psql.NewNotesStorage(db)
-	usersNotesStorage := psql.NewUsersNotesStorage(db)
-	//sessionStorage := storage.NewSessionStorage()
+	grpcSessManager := grpcSession.NewAuthCheckerClient(grpcSessionConn)
 
-	notesService := notes.NewNotesApp(notesStorage, usersNotesStorage)
 	userService := user.NewUserService(userStorage, imageStorage, securityManager)
 	authService := auth.NewAuthApp(grpcSessManager, userService, securityManager)
+	grpcNoteServ := grpcNote.NewNoteServiceClient(grpcNoteConn)
 
-	notesHandler := handler.NewNotesHandler(notesService, authService, securityManager)
+	notesHandler := handler.NewNotesHandler(grpcNoteServ, authService, securityManager)
 	userHandler := handler.NewUserHandler(userService)
 	loginHandler := handler.NewLoginHandler(authService)
 

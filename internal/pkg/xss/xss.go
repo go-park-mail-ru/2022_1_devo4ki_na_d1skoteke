@@ -1,7 +1,7 @@
 package xss
 
 import (
-	"cotion/internal/domain/entity"
+	"cotion/internal/api/domain/entity"
 	"github.com/microcosm-cc/bluemonday"
 	log "github.com/sirupsen/logrus"
 )

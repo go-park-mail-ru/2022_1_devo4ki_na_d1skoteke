@@ -1,0 +1,28 @@
+syntax = "proto3";
+option go_package = "internal/note/infra/grpc";
+package grpcNote;
+// protoc --go_out=. --go-grpc_out=. internal/note/domain/note.proto
+
+message Note{
+  string ID = 1;
+  string Name = 2;
+  string Body = 3;
+}
+
+message NoteReq {
+  string userID = 1;
+  string noteID = 2;
+  Note note = 3;
+}
+
+message Nothing {
+  bool status = 1;
+}
+
+service NoteService {
+  rpc Save (NoteReq) returns (Nothing) {}
+  rpc Get (NoteReq) returns (Note) {}
+  rpc Update (NoteReq) returns (Nothing) {}
+  rpc Delete (NoteReq) returns (Nothing) {}
+  rpc NotesList (NoteReq) returns (stream Note) {}
+}
